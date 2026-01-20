@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 // Pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Cadastro from "./pages/Cadastro";
 import Dashboard from "./pages/Dashboard";
 import PlanilhaGeral from "./pages/PlanilhaGeral";
 import CarneLeao from "./pages/CarneLeao";
@@ -34,6 +35,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/cadastro" element={<Cadastro />} />
             
             {/* Protected Routes */}
             <Route element={<MainLayout />}>
