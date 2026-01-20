@@ -4,16 +4,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
-const Login: React.FC = () => {
+const Cadastro: React.FC = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { signup, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,18 +30,30 @@ const Login: React.FC = () => {
     setError('');
     setIsSubmitting(true);
 
-    if (!email.trim() || !password.trim()) {
+    if (!name.trim() || !email.trim() || !password.trim()) {
       setError('Por favor, preencha todos os campos');
       setIsSubmitting(false);
       return;
     }
 
-    const result = await login(email, password);
+    if (password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const result = await signup(email, password, name);
     
     if (result.success) {
-      navigate('/dashboard', { replace: true });
+      setSuccess(true);
     } else {
-      setError(result.error || 'Erro ao realizar login');
+      setError(result.error || 'Erro ao criar conta');
     }
     
     setIsSubmitting(false);
@@ -48,6 +63,41 @@ const Login: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex bg-background">
+        <div className="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center p-12">
+          <div className="max-w-md text-center">
+            <div className="w-24 h-24 bg-primary-foreground rounded-2xl flex items-center justify-center mx-auto mb-8">
+              <span className="text-primary font-bold text-4xl">C</span>
+            </div>
+            <h1 className="text-4xl font-bold text-primary-foreground mb-4">
+              Sistema Contábil
+            </h1>
+            <p className="text-primary-foreground/80 text-lg">
+              Controle completo das suas atividades contábeis em um único lugar.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="w-full max-w-md text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 className="w-8 h-8 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Conta criada com sucesso!</h2>
+            <p className="text-muted-foreground mb-6">
+              Sua conta foi criada. Você já pode fazer login no sistema.
+            </p>
+            <Button onClick={() => navigate('/login')} className="w-full h-12">
+              Ir para Login
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -69,7 +119,7 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Panel - Login Form */}
+      {/* Right Panel - Signup Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
@@ -81,19 +131,33 @@ const Login: React.FC = () => {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-2">Entrar</h2>
+            <h2 className="text-2xl font-bold mb-2">Criar Conta</h2>
             <p className="text-muted-foreground">
-              Digite suas credenciais para acessar o sistema
+              Preencha os dados para criar sua conta
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive animate-fade-in">
                 <AlertCircle className="w-5 h-5 shrink-0" />
                 <p className="text-sm">{error}</p>
               </div>
             )}
+
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome Completo</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Seu nome"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+                className="h-12"
+                disabled={isSubmitting}
+              />
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
@@ -118,7 +182,7 @@ const Login: React.FC = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   className="h-12 pr-12"
                   disabled={isSubmitting}
                 />
@@ -130,6 +194,21 @@ const Login: React.FC = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              <p className="text-xs text-muted-foreground">Mínimo de 6 caracteres</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+              <Input
+                id="confirmPassword"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+                className="h-12"
+                disabled={isSubmitting}
+              />
             </div>
 
             <Button 
@@ -140,19 +219,19 @@ const Login: React.FC = () => {
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <span className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  Entrando...
+                  Criando conta...
                 </span>
               ) : (
-                'Entrar'
+                'Criar Conta'
               )}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-muted-foreground">
-              Não tem uma conta?{' '}
-              <Link to="/cadastro" className="text-primary font-medium hover:underline">
-                Criar conta
+              Já tem uma conta?{' '}
+              <Link to="/login" className="text-primary font-medium hover:underline">
+                Fazer login
               </Link>
             </p>
           </div>
@@ -162,4 +241,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Cadastro;
