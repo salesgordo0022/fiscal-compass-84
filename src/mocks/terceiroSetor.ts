@@ -19,12 +19,10 @@ export interface EntidadeTerceiroSetor {
   dataRotina: string;
 }
 
-export const entidadesTerceiroSetor: EntidadeTerceiroSetor[] = [];
-
-export const entidadesSaiu: EntidadeTerceiroSetor[] = [
-  // Da imagem 14 (primeira foto)
+// Entidades ativas do Terceiro Setor (aba principal)
+export const entidadesTerceiroSetor: EntidadeTerceiroSetor[] = [
   {
-    id: 's1',
+    id: 't1',
     codigo: '',
     empresa: 'ASSOCIACAO COMUNITARIA INDIGENA ITAPYWA DA ALDEIA ITAPY',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -36,7 +34,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's2',
+    id: 't2',
     codigo: '391',
     empresa: 'ASSOCIAÇÃO MULHERES EMPREENDEDORAS DE GRAJAÚ (AMEG)',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -48,7 +46,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's3',
+    id: 't3',
     codigo: '521',
     empresa: 'ASSEMBLEIA DE DEUS EM CRISTO JESUS – MINISTÉRIO COLÉGIO DOS APÓSTOLOS',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -60,7 +58,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '31 de outubro de 2025',
   },
   {
-    id: 's4',
+    id: 't4',
     codigo: '459',
     empresa: 'IGREJA DE CRISTO MINISTERIO APOSTOLICO NOVA TERRA (MANT)',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -72,7 +70,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '30 de novembro de 2025',
   },
   {
-    id: 's5',
+    id: 't5',
     codigo: '365',
     empresa: 'TEMPLO EVANTO DO AMANHECER DE ALTO BRASIL',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -84,7 +82,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's6',
+    id: 't6',
     codigo: '353',
     empresa: 'IGREJA ASSEMBLEIA DE DEUS MINISTERIO YESHUA KADOSH',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -96,19 +94,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '31 de dezembro de 2025',
   },
   {
-    id: 's7',
-    codigo: '',
-    empresa: 'COLONIA DE PESCADORES Z-202 DE FORMOSA DA SERRA NEGRA-MA',
-    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
-    anotacao: 'N. ESTÁ MAIS CONOSCO',
-    status: 'Sem movimento',
-    modeloInform: '',
-    acessos: '',
-    cnpj: '24.292.071/0001-73',
-    dataRotina: '',
-  },
-  {
-    id: 's8',
+    id: 't7',
     codigo: '',
     empresa: 'AMAGRAJAU AMIGOS ASSOCIADOS DE GRAJAU',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -120,7 +106,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's9',
+    id: 't8',
     codigo: '',
     empresa: 'ASSOCIAÇÃO DE PAIS E AMIGOS DOS EXCEPCIONAIS (APAE) DE GRAJAU - MA',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -132,7 +118,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's10',
+    id: 't9',
     codigo: '173',
     empresa: 'IGREJA VIDA DE GRAJAU',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -144,7 +130,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '30 de novembro de 2025',
   },
   {
-    id: 's11',
+    id: 't10',
     codigo: '153',
     empresa: 'IGREJA ASSEMBLEIA DE DEUS - MINISTERIO FONTE DE VIDA',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -156,31 +142,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '28 de fevereiro de 2025',
   },
   {
-    id: 's12',
-    codigo: '',
-    empresa: 'LOJA MACONICA E FRATERNIDADE GRAJAUENSE N17',
-    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
-    anotacao: 'N. ESTÁ MAIS CONOSCO',
-    status: 'Sem movimento',
-    modeloInform: '',
-    acessos: '',
-    cnpj: '63.533.426/0001-20',
-    dataRotina: '',
-  },
-  {
-    id: 's13',
-    codigo: '',
-    empresa: 'SOMASA SOCIEDADE DE MACONS E SAMARITANAS DE GRAJAU',
-    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
-    anotacao: 'N. ESTÁ MAIS CONOSCO',
-    status: '',
-    modeloInform: '',
-    acessos: '',
-    cnpj: '00.476.742/0001-98',
-    dataRotina: '',
-  },
-  {
-    id: 's14',
+    id: 't11',
     codigo: '456',
     empresa: 'INSTITUTO MAIS DE DEUS MENOS DE MIM - IMAD',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -192,7 +154,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '31 de dezembro de 2025',
   },
   {
-    id: 's15',
+    id: 't12',
     codigo: '',
     empresa: 'ESCOLA EBENEZER CRIANCA FELIZ',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -204,7 +166,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's16',
+    id: 't13',
     codigo: '237',
     empresa: 'IGREJA PENT. EVANGELHO DO REINO MINIST. DE INTERC..',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -216,7 +178,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '30 de setembro de 2025',
   },
   {
-    id: 's17',
+    id: 't14',
     codigo: '474',
     empresa: '1ª IGREJA CRISTA EVANGELICA GRAJAU MA',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -228,7 +190,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '31 de dezembro de 2025',
   },
   {
-    id: 's18',
+    id: 't15',
     codigo: '',
     empresa: 'IGREJA PENTECOSTAL TABERNACULO DE ORAÇÃO - IPTD',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -240,7 +202,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's19',
+    id: 't16',
     codigo: '',
     empresa: 'IGREJA PENTECOSTAL NOVA VIDA',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -251,9 +213,8 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     cnpj: '32.213.881/0001-15',
     dataRotina: '',
   },
-  // Da imagem 15 (segunda foto)
   {
-    id: 's20',
+    id: 't17',
     codigo: '25',
     empresa: 'SINDIC. DOS TRAB. R. AGRICULTORES E AGRICULTORAS FAMILIARES DE GRAJAU',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -265,19 +226,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '31 de dezembro de 2025',
   },
   {
-    id: 's21',
-    codigo: '',
-    empresa: 'SINDIC. DOS TRAB. EM ESTAB. DE ENSINO EM GRAJAU - SINTEEGRA',
-    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
-    anotacao: 'N. ESTÁ MAIS CONOSCO',
-    status: '',
-    modeloInform: '',
-    acessos: '',
-    cnpj: '03.604.800/0001-00',
-    dataRotina: '',
-  },
-  {
-    id: 's22',
+    id: 't18',
     codigo: '161',
     empresa: 'SINDIC. DOS TRABALHAD RURAIS AGRICULTORES FAMILIARES DE ARAME',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -289,7 +238,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '30 de novembro de 2025',
   },
   {
-    id: 's23',
+    id: 't19',
     codigo: '265',
     empresa: 'SINDIC. RURAL DE GRAJAÚ',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -301,19 +250,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '31 de dezembro de 2023',
   },
   {
-    id: 's24',
-    codigo: '',
-    empresa: 'SINDICATO DOS AGENTES COMUNITARIOS DE SAUDE DE GRAJAU',
-    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
-    anotacao: 'N. ESTÁ MAIS CONOSCO',
-    status: 'Sem movimento',
-    modeloInform: '',
-    acessos: '',
-    cnpj: '10.212.699/0001-88',
-    dataRotina: '',
-  },
-  {
-    id: 's25',
+    id: 't20',
     codigo: '',
     empresa: 'ASSOC. DOS PROD. RURAIS DA LOCALIDADE DE BELEM',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -325,7 +262,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's26',
+    id: 't21',
     codigo: '',
     empresa: 'ASSOC. DOS PRODUTORES MENINO JESUS DO TANQUE',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -337,7 +274,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's27',
+    id: 't22',
     codigo: '',
     empresa: 'ASSOC. DO DESENV. CRISTAO DO MENOR CARENTE DE GRAJAU',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -348,8 +285,72 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     cnpj: '12.158.010/0001-39',
     dataRotina: '',
   },
+];
+
+// Entidades que saíram (aba Saiu) - apenas com "N. ESTÁ MAIS CONOSCO"
+export const entidadesSaiu: EntidadeTerceiroSetor[] = [
   {
-    id: 's28',
+    id: 's1',
+    codigo: '',
+    empresa: 'COLONIA DE PESCADORES Z-202 DE FORMOSA DA SERRA NEGRA-MA',
+    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
+    anotacao: 'N. ESTÁ MAIS CONOSCO',
+    status: 'Sem movimento',
+    modeloInform: '',
+    acessos: '',
+    cnpj: '24.292.071/0001-73',
+    dataRotina: '',
+  },
+  {
+    id: 's2',
+    codigo: '',
+    empresa: 'LOJA MACONICA E FRATERNIDADE GRAJAUENSE N17',
+    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
+    anotacao: 'N. ESTÁ MAIS CONOSCO',
+    status: 'Sem movimento',
+    modeloInform: '',
+    acessos: '',
+    cnpj: '63.533.426/0001-20',
+    dataRotina: '',
+  },
+  {
+    id: 's3',
+    codigo: '',
+    empresa: 'SOMASA SOCIEDADE DE MACONS E SAMARITANAS DE GRAJAU',
+    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
+    anotacao: 'N. ESTÁ MAIS CONOSCO',
+    status: '',
+    modeloInform: '',
+    acessos: '',
+    cnpj: '00.476.742/0001-98',
+    dataRotina: '',
+  },
+  {
+    id: 's4',
+    codigo: '',
+    empresa: 'SINDIC. DOS TRAB. EM ESTAB. DE ENSINO EM GRAJAU - SINTEEGRA',
+    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
+    anotacao: 'N. ESTÁ MAIS CONOSCO',
+    status: '',
+    modeloInform: '',
+    acessos: '',
+    cnpj: '03.604.800/0001-00',
+    dataRotina: '',
+  },
+  {
+    id: 's5',
+    codigo: '',
+    empresa: 'SINDICATO DOS AGENTES COMUNITARIOS DE SAUDE DE GRAJAU',
+    atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
+    anotacao: 'N. ESTÁ MAIS CONOSCO',
+    status: 'Sem movimento',
+    modeloInform: '',
+    acessos: '',
+    cnpj: '10.212.699/0001-88',
+    dataRotina: '',
+  },
+  {
+    id: 's6',
     codigo: '',
     empresa: 'ASSOC. EVANGELICA GUNNAR VINGRE',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -361,7 +362,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's29',
+    id: 's7',
     codigo: '',
     empresa: 'ASSOCIAÇÃO DOS LEOES DE GRAJAÚ',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
@@ -373,7 +374,7 @@ export const entidadesSaiu: EntidadeTerceiroSetor[] = [
     dataRotina: '',
   },
   {
-    id: 's30',
+    id: 's8',
     codigo: '',
     empresa: 'ACADEMIA GRAJAUENSE DE LETRAS E ARTES',
     atividades: [{ id: '1', nome: 'Lançamento', concluida: false }],
