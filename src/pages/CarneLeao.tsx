@@ -165,9 +165,9 @@ const PessoasFisicasTable: React.FC<PessoasFisicasTableProps> = ({ pessoas, onPe
       cpf: pessoa.cpf,
       anotacoes: pessoa.anotacao ? [{ id: '1', texto: pessoa.anotacao, data: new Date().toLocaleDateString('pt-BR') }] : [],
       checklistItems: [
-        { id: '1', texto: 'Lançar Documentos', concluido: pessoa.lancarDocumentos },
-        { id: '2', texto: 'Digitalizar', concluido: pessoa.digitalizar },
-        { id: '3', texto: 'Carnê Lançado', concluido: pessoa.carneLancado },
+        { id: '1', texto: 'Documentos', concluido: pessoa.documentos },
+        { id: '2', texto: 'Lançar Documentos', concluido: pessoa.lancarDocumentos },
+        { id: '3', texto: 'Digitalizar', concluido: pessoa.digitalizar },
       ],
     };
   };
@@ -324,9 +324,10 @@ const CarneLeao: React.FC = () => {
     const newPessoa: PessoaFisicaCarneLeao = {
       id: `new-${Date.now()}`,
       pessoaFisica: data.pessoaFisica,
+      documentos: false,
       lancarDocumentos: false,
       digitalizar: false,
-      carneLancado: false,
+      carneLancadoPercent: 0,
       anotacao: '',
       dataFechamento: '',
       tipoLogin: (data.tipoLogin as 'Certificado' | 'Procuração' | 'Conta Gov.' | '') || '',
@@ -368,9 +369,9 @@ const CarneLeao: React.FC = () => {
         : [];
       
       const defaultChecklist: ChecklistItem[] = [
-        { id: '1', texto: 'Lançar Documentos', concluido: pessoa.lancarDocumentos },
-        { id: '2', texto: 'Digitalizar', concluido: pessoa.digitalizar },
-        { id: '3', texto: 'Carnê Lançado', concluido: pessoa.carneLancado },
+        { id: '1', texto: 'Documentos', concluido: pessoa.documentos },
+        { id: '2', texto: 'Lançar Documentos', concluido: pessoa.lancarDocumentos },
+        { id: '3', texto: 'Digitalizar', concluido: pessoa.digitalizar },
       ];
       
       setEditState({
