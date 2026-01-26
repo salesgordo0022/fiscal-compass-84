@@ -25,7 +25,58 @@ export interface TarefaHolding {
   dataCriacao: string;
 }
 
-export const tarefasHolding: TarefaHolding[] = [];
+export const tarefasHolding: TarefaHolding[] = [
+  {
+    id: '1',
+    empresa: 'L. A INCORPORACAO LTDA',
+    cnpj: '34.696.630/0001-64',
+    cnpjColor: 'text-green-600',
+    enquadramento: '',
+    status: 'a_fazer',
+    descricao: 'ESTUDAR CONTABILIZAÇÃO DE IMOVEL',
+    dataCriacao: '20 de janeiro de 2026',
+  },
+  {
+    id: '2',
+    empresa: 'JRJ PARTICIPACOES LTDA',
+    cnpj: '51.841.428/0001-06',
+    cnpjColor: 'text-amber-600',
+    enquadramento: 'presumido_comercio_servico',
+    status: 'a_fazer',
+    descricao: '',
+    dataCriacao: '20 de janeiro de 2026',
+  },
+  {
+    id: '3',
+    empresa: 'X & B INCORPORACAO LTDA',
+    cnpj: '56.440.283/0001-47',
+    cnpjColor: 'text-cyan-600',
+    enquadramento: 'presumido_comercio_servico',
+    status: 'a_fazer',
+    descricao: '',
+    dataCriacao: '20 de janeiro de 2026',
+  },
+  {
+    id: '4',
+    empresa: 'XB PARTICIPACOES LTDA',
+    cnpj: '62.965.107/0001-21',
+    cnpjColor: 'text-orange-600',
+    enquadramento: '',
+    status: 'a_fazer',
+    descricao: '',
+    dataCriacao: '20 de janeiro de 2026',
+  },
+  {
+    id: '5',
+    empresa: 'OLIVEIRA EMPREENDIMENTOS',
+    cnpj: '',
+    cnpjColor: 'text-slate-600',
+    enquadramento: '',
+    status: 'a_fazer',
+    descricao: '',
+    dataCriacao: '20 de janeiro de 2026',
+  },
+];
 
 export const cnpjColorOptions = [
   { value: 'text-blue-600', label: 'Azul', bgPreview: 'bg-blue-600' },
