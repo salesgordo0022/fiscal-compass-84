@@ -117,11 +117,12 @@ const TerceiroSetor: React.FC = () => {
     dataRotina: '',
   });
 
-  // Stats
-  const totalEntidades = entidades.length;
-  const comMovimento = entidades.filter(e => e.status === 'Com movimento').length;
-  const semMovimento = entidades.filter(e => e.status === 'Sem movimento').length;
-  const declaracaoSM = entidades.filter(e => e.status === 'Declaração S/M').length;
+  // Stats - Combining both tabs
+  const allEntidades = [...entidades, ...entidadesSaiuState];
+  const totalEntidades = allEntidades.length;
+  const comMovimento = allEntidades.filter(e => e.status === 'Com movimento').length;
+  const semMovimento = allEntidades.filter(e => e.status === 'Sem movimento').length;
+  const declaracaoSM = allEntidades.filter(e => e.status === 'Declaração S/M').length;
 
   // Filter entities
   const getFilteredEntidades = () => {
