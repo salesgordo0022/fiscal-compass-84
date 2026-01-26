@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, ChevronDown, Check, MessageSquare, Eye, Pencil, UserMinus } from 'lucide-react';
+import { toast } from 'sonner';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
 import { Button } from '@/components/ui/button';
@@ -1105,21 +1106,75 @@ const PlanilhaGeral: React.FC = () => {
     }
     
     // Salvar dados no map
+    const newSavedData: EmpresaSavedData = {
+      codigo: editState.codigo,
+      checklistItems: editState.checklistItems,
+      anotacoes: anotacoesFinais,
+      trimestre: editState.trimestre,
+      lalur: editState.lalur,
+      contDigital: editState.contDigital,
+      regime: editState.regime,
+      situacao: editState.situacao,
+      mensalidades: editState.mensalidades,
+      regimeAnoAnterior: editState.regimeAnoAnterior,
+    };
+
     setSavedDataMap(prev => ({
       ...prev,
-      [selectedEmpresa.id]: {
-        codigo: editState.codigo,
-        checklistItems: editState.checklistItems,
-        anotacoes: anotacoesFinais,
-        trimestre: editState.trimestre,
-        lalur: editState.lalur,
-        contDigital: editState.contDigital,
-        regime: editState.regime,
-        situacao: editState.situacao,
-        mensalidades: editState.mensalidades,
-        regimeAnoAnterior: editState.regimeAnoAnterior,
-      }
+      [selectedEmpresa.id]: newSavedData
     }));
+
+    // Determinar para qual aba a empresa deve ir baseado na situação
+    const situacaoLower = editState.situacao.toLowerCase();
+    const isSaiu = situacaoLower === 'saiu';
+    const isSemMovimento = situacaoLower.includes('sem movimento');
+    const isComMovimento = situacaoLower.includes('com movimento');
+
+    // Determinar aba de destino baseado na situação e regime
+    let targetTab: 'lucro-real' | 'lucro-presumido' | 'sem-movimento' | null = null;
+    
+    if (isSaiu || isSemMovimento) {
+      targetTab = 'sem-movimento';
+    } else if (isComMovimento || editState.situacao === '') {
+      // Se tem movimento ou situação não definida, usar o regime para determinar a aba
+      const regimeLower = editState.regime.toLowerCase();
+      if (regimeLower.includes('real')) {
+        targetTab = 'lucro-real';
+      } else if (regimeLower.includes('presumido')) {
+        targetTab = 'lucro-presumido';
+      }
+    }
+
+    // Mover empresa entre abas se necessário
+    if (targetTab && targetTab !== activeTab) {
+      // Remover da aba atual
+      if (activeTab === 'lucro-real') {
+        setEmpresasLucroRealList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
+      } else if (activeTab === 'lucro-presumido') {
+        setEmpresasLucroPresumidoList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
+      } else {
+        setEmpresasSemMovimentoList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
+      }
+
+      // Adicionar na aba de destino
+      const updatedEmpresa = { ...selectedEmpresa };
+      if (targetTab === 'lucro-real') {
+        setEmpresasLucroRealList(prev => [updatedEmpresa, ...prev]);
+      } else if (targetTab === 'lucro-presumido') {
+        setEmpresasLucroPresumidoList(prev => [updatedEmpresa, ...prev]);
+      } else {
+        setEmpresasSemMovimentoList(prev => [updatedEmpresa, ...prev]);
+      }
+
+      // Mostrar mensagem de movimentação
+      const tabNames: Record<string, string> = {
+        'lucro-real': 'Lucro Real',
+        'lucro-presumido': 'Lucro Presumido',
+        'sem-movimento': 'Sem Movimento'
+      };
+      
+      toast.success(`Empresa movida para a aba "${tabNames[targetTab!]}"`);
+    }
     
     // Limpar campo de nova anotação
     setEditState(prev => ({ ...prev, novaAnotacao: '' }));

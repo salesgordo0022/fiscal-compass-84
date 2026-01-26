@@ -167,49 +167,25 @@ const TerceiroSetor: React.FC = () => {
       allAnotacoes.push(newAnotacao.trim());
     }
 
-    const combinedAnotacao = allAnotacoes.join(' | ');
-    
-    // Check if the entity should move to "Saiu" tab (contains "N. ESTÁ MAIS CONOSCO")
-    const shouldBeInSaiu = combinedAnotacao.toUpperCase().includes('N. ESTÁ MAIS CONOSCO') || 
-                           combinedAnotacao.toUpperCase().includes('NÃO ESTÁ MAIS CONOSCO') ||
-                           combinedAnotacao.toUpperCase().includes('NAO ESTA MAIS CONOSCO');
-
     const updatedEntidade = { 
       ...selectedEntidade, 
       ...formData,
       codigo: tempCode,
       atividades: [...atividades],
-      anotacao: combinedAnotacao
+      anotacao: allAnotacoes.join(' | ')
     };
 
     if (selectedTabType === 'entidades') {
-      if (shouldBeInSaiu) {
-        // Move from "Entidades" to "Saiu"
-        setEntidades(prev => prev.filter(e => e.id !== selectedEntidade.id));
-        setEntidadesSaiuState(prev => [updatedEntidade, ...prev]);
-        toast.success('Entidade movida para a aba "Saiu" com sucesso!');
-      } else {
-        // Stay in "Entidades"
-        setEntidades(prev => prev.map(e => 
-          e.id === selectedEntidade.id ? updatedEntidade : e
-        ));
-        toast.success('Alterações salvas com sucesso!');
-      }
+      setEntidades(prev => prev.map(e => 
+        e.id === selectedEntidade.id ? updatedEntidade : e
+      ));
     } else {
-      if (!shouldBeInSaiu) {
-        // Move from "Saiu" to "Entidades"
-        setEntidadesSaiuState(prev => prev.filter(e => e.id !== selectedEntidade.id));
-        setEntidades(prev => [updatedEntidade, ...prev]);
-        toast.success('Entidade movida para a aba "Entidades do Terceiro Setor" com sucesso!');
-      } else {
-        // Stay in "Saiu"
-        setEntidadesSaiuState(prev => prev.map(e => 
-          e.id === selectedEntidade.id ? updatedEntidade : e
-        ));
-        toast.success('Alterações salvas com sucesso!');
-      }
+      setEntidadesSaiuState(prev => prev.map(e => 
+        e.id === selectedEntidade.id ? updatedEntidade : e
+      ));
     }
     
+    toast.success('Alterações salvas com sucesso!');
     setIsSheetOpen(false);
   };
 
