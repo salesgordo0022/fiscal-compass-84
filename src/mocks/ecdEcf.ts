@@ -735,4 +735,16 @@ export const empresasEcdEcf: EmpresaEcdEcf[] = [
     dataEcf: '31 de dezembro de 2024',
     situacaoEcf: '',
   },
+  {
+    id: '60',
+    empresa: 'V L V RAMOS',
+    regimeAtual: 'lucro_real',
+    regimeAnoAnterior: '',
+    statusEcd: 'enviado',
+    dataEcd: '31 de dezembro de 2024',
+    situacaoEcd: '',
+    statusEcf: 'enviado',
+    dataEcf: '31 de dezembro de 2024',
+    situacaoEcf: '',
+  },
 ];
