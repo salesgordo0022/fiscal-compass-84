@@ -1156,8 +1156,12 @@ const PlanilhaGeral: React.FC = () => {
         setEmpresasSemMovimentoList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
       }
 
-      // Adicionar na aba de destino
-      const updatedEmpresa = { ...selectedEmpresa };
+      // Adicionar na aba de destino com os dados atualizados
+      const updatedEmpresa = { 
+        ...selectedEmpresa,
+        situacao: editState.situacao,
+        regime: editState.regime,
+      };
       if (targetTab === 'lucro-real') {
         setEmpresasLucroRealList(prev => [updatedEmpresa, ...prev]);
       } else if (targetTab === 'lucro-presumido') {
