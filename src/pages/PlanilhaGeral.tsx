@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, ChevronDown, Check, MessageSquare, Eye, Pencil, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
@@ -932,12 +932,51 @@ const PlanilhaGeral: React.FC = () => {
   const [selectedEmpresa, setSelectedEmpresa] = useState<EmpresaPlanilha | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [regimeAnoPopoverOpen, setRegimeAnoPopoverOpen] = useState(false);
-  const [savedDataMap, setSavedDataMap] = useState<Record<string, EmpresaSavedData>>({});
+  // Carregar dados do localStorage
+  const [savedDataMap, setSavedDataMap] = useState<Record<string, EmpresaSavedData>>(() => {
+    const saved = localStorage.getItem('planilhaGeral_savedDataMap');
+    return saved ? JSON.parse(saved) : {};
+  });
   
-  // Estados para listas de empresas
-  const [empresasLucroRealList, setEmpresasLucroRealList] = useState<EmpresaPlanilha[]>(empresasLucroReal);
-  const [empresasLucroPresumidoList, setEmpresasLucroPresumidoList] = useState<EmpresaPlanilha[]>(empresasLucroPresumido);
-  const [empresasSemMovimentoList, setEmpresasSemMovimentoList] = useState<EmpresaPlanilha[]>(empresasSemMovimento);
+  // Estados para listas de empresas - inicializar com base nos dados salvos
+  const [empresasLucroRealList, setEmpresasLucroRealList] = useState<EmpresaPlanilha[]>(() => {
+    const savedLists = localStorage.getItem('planilhaGeral_empresasLists');
+    if (savedLists) {
+      const parsed = JSON.parse(savedLists);
+      return parsed.lucroReal || empresasLucroReal;
+    }
+    return empresasLucroReal;
+  });
+  const [empresasLucroPresumidoList, setEmpresasLucroPresumidoList] = useState<EmpresaPlanilha[]>(() => {
+    const savedLists = localStorage.getItem('planilhaGeral_empresasLists');
+    if (savedLists) {
+      const parsed = JSON.parse(savedLists);
+      return parsed.lucroPresumido || empresasLucroPresumido;
+    }
+    return empresasLucroPresumido;
+  });
+  const [empresasSemMovimentoList, setEmpresasSemMovimentoList] = useState<EmpresaPlanilha[]>(() => {
+    const savedLists = localStorage.getItem('planilhaGeral_empresasLists');
+    if (savedLists) {
+      const parsed = JSON.parse(savedLists);
+      return parsed.semMovimento || empresasSemMovimento;
+    }
+    return empresasSemMovimento;
+  });
+
+  // Salvar listas no localStorage quando mudarem
+  useEffect(() => {
+    localStorage.setItem('planilhaGeral_empresasLists', JSON.stringify({
+      lucroReal: empresasLucroRealList,
+      lucroPresumido: empresasLucroPresumidoList,
+      semMovimento: empresasSemMovimentoList,
+    }));
+  }, [empresasLucroRealList, empresasLucroPresumidoList, empresasSemMovimentoList]);
+
+  // Salvar savedDataMap no localStorage quando mudar
+  useEffect(() => {
+    localStorage.setItem('planilhaGeral_savedDataMap', JSON.stringify(savedDataMap));
+  }, [savedDataMap]);
   
   // Estados para alíquotas editáveis
   const [lucroRealData, setLucroRealData] = useState(lucroRealAliquotas);
