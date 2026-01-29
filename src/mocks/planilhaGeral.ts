@@ -20,6 +20,7 @@ export const lucroPresumidoAliquotas: AliquotaItem[] = [
 export interface EmpresaPlanilha {
   id: string;
   cod: string;
+  cnpj?: string;
   empresa: string;
   solicitacao: boolean;
   despesas: boolean;
