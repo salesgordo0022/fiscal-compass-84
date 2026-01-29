@@ -655,6 +655,7 @@ interface LalurState {
 // Dados salvos de cada empresa
 interface EmpresaSavedData {
   codigo: string;
+  cnpj: string;
   checklistItems: ChecklistItem[];
   anotacoes: Anotacao[];
   trimestre: string;
@@ -668,6 +669,7 @@ interface EmpresaSavedData {
 
 interface EmpresaEditState {
   codigo: string;
+  cnpj: string;
   editandoCodigo: boolean;
   checklistItems: ChecklistItem[];
   novoChecklistItem: string;
@@ -789,6 +791,7 @@ const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick,
         <TableHeader>
           <TableRow className="border-b border-border">
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[60px]">COD.</TableHead>
+            <TableHead className="text-xs font-medium text-muted-foreground min-w-[150px]">CNPJ</TableHead>
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[200px]">Empresas</TableHead>
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[140px]">Progresso</TableHead>
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[80px] text-center">Detalhes</TableHead>
@@ -809,7 +812,10 @@ const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick,
                 className="border-b border-border hover:bg-muted/20 cursor-pointer"
                 onClick={() => onEmpresaClick(empresa)}
               >
-                <TableCell className="py-2 text-sm">{savedDataMap[empresa.id]?.codigo || empresa.cod}</TableCell>
+              <TableCell className="py-2 text-sm">{savedDataMap[empresa.id]?.codigo || empresa.cod}</TableCell>
+                <TableCell className="py-2 text-sm text-muted-foreground font-mono">
+                  {savedDataMap[empresa.id]?.cnpj || empresa.cnpj || '-'}
+                </TableCell>
                 <TableCell className="py-2 text-sm font-medium text-primary hover:underline">
                   {empresa.empresa}
                 </TableCell>
@@ -998,6 +1004,7 @@ const PlanilhaGeral: React.FC = () => {
   
   const [editState, setEditState] = useState<EmpresaEditState>({
     codigo: '',
+    cnpj: '',
     editandoCodigo: false,
     checklistItems: [],
     novoChecklistItem: '',
@@ -1080,6 +1087,7 @@ const PlanilhaGeral: React.FC = () => {
       // Usar dados salvos
       setEditState({
         codigo: savedData.codigo,
+        cnpj: savedData.cnpj,
         editandoCodigo: false,
         checklistItems: savedData.checklistItems,
         novoChecklistItem: '',
@@ -1111,6 +1119,7 @@ const PlanilhaGeral: React.FC = () => {
       
       setEditState({
         codigo: empresa.cod,
+        cnpj: empresa.cnpj || '',
         editandoCodigo: false,
         checklistItems: defaultChecklist,
         novoChecklistItem: '',
@@ -1147,6 +1156,7 @@ const PlanilhaGeral: React.FC = () => {
     // Salvar dados no map
     const newSavedData: EmpresaSavedData = {
       codigo: editState.codigo,
+      cnpj: editState.cnpj,
       checklistItems: editState.checklistItems,
       anotacoes: anotacoesFinais,
       trimestre: editState.trimestre,
@@ -1462,7 +1472,8 @@ const PlanilhaGeral: React.FC = () => {
             <SheetTitle className="text-lg font-bold">
               {selectedEmpresa?.empresa}
             </SheetTitle>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-4 mt-2">
+              {/* Código */}
               {editState.editandoCodigo ? (
                 <div className="flex items-center gap-1">
                   <SquarePen className="h-4 w-4 text-muted-foreground" />
@@ -1493,9 +1504,20 @@ const PlanilhaGeral: React.FC = () => {
                     <SquarePen className="h-4 w-4 text-muted-foreground" />
                   </Button>
                   <Label className="text-sm text-muted-foreground">COD:</Label>
-                  <span className="text-sm font-medium">{editState.codigo}</span>
+                  <span className="text-sm font-medium">{editState.codigo || '-'}</span>
                 </div>
               )}
+
+              {/* CNPJ */}
+              <div className="flex items-center gap-1">
+                <Label className="text-sm text-muted-foreground">CNPJ:</Label>
+                <Input 
+                  value={editState.cnpj}
+                  onChange={(e) => setEditState(prev => ({ ...prev, cnpj: e.target.value }))}
+                  className="h-8 w-44 text-sm font-mono"
+                  placeholder="00.000.000/0000-00"
+                />
+              </div>
             </div>
           </SheetHeader>
 
