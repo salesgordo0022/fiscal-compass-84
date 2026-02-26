@@ -1007,12 +1007,17 @@ const PlanilhaGeral: React.FC = () => {
           setEmpresasLucroPresumidoList(lucroPresumido);
           setEmpresasSemMovimentoList(semMovimento);
         } else {
-          // Banco vazio - usar dados mock e salvar no banco
-          const allEmpresas = [
-            ...empresasLucroReal.map(e => ({ ...e, tab: 'lucro-real' })),
-            ...empresasLucroPresumido.map(e => ({ ...e, tab: 'lucro-presumido' })),
-            ...empresasSemMovimento.map(e => ({ ...e, tab: 'sem-movimento' })),
-          ];
+          // Banco vazio - usar dados mock e salvar no banco (com prefixo nos IDs para evitar colisão)
+          const prefixedLucroReal = empresasLucroReal.map(e => ({ ...e, id: `lr-${e.id}`, tab: 'lucro-real' }));
+          const prefixedLucroPresumido = empresasLucroPresumido.map(e => ({ ...e, id: `lp-${e.id}`, tab: 'lucro-presumido' }));
+          const prefixedSemMovimento = empresasSemMovimento.map(e => ({ ...e, tab: 'sem-movimento' }));
+          
+          const allEmpresas = [...prefixedLucroReal, ...prefixedLucroPresumido, ...prefixedSemMovimento];
+          
+          // Atualizar listas locais com IDs prefixados
+          setEmpresasLucroRealList(prefixedLucroReal);
+          setEmpresasLucroPresumidoList(prefixedLucroPresumido);
+          setEmpresasSemMovimentoList(prefixedSemMovimento);
 
           for (const emp of allEmpresas) {
             await (supabase.from('planilha_geral_empresas') as any).upsert({
