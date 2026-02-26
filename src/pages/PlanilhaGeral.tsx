@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, ChevronDown, Check, MessageSquare, Eye, Pencil, UserMinus, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
@@ -939,51 +940,231 @@ const PlanilhaGeral: React.FC = () => {
   const [selectedEmpresa, setSelectedEmpresa] = useState<EmpresaPlanilha | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [regimeAnoPopoverOpen, setRegimeAnoPopoverOpen] = useState(false);
-  // Carregar dados do localStorage
-  const [savedDataMap, setSavedDataMap] = useState<Record<string, EmpresaSavedData>>(() => {
-    const saved = localStorage.getItem('planilhaGeral_savedDataMap');
-    return saved ? JSON.parse(saved) : {};
-  });
-  
-  // Estados para listas de empresas - inicializar com base nos dados salvos
-  const [empresasLucroRealList, setEmpresasLucroRealList] = useState<EmpresaPlanilha[]>(() => {
-    const savedLists = localStorage.getItem('planilhaGeral_empresasLists');
-    if (savedLists) {
-      const parsed = JSON.parse(savedLists);
-      return parsed.lucroReal || empresasLucroReal;
-    }
-    return empresasLucroReal;
-  });
-  const [empresasLucroPresumidoList, setEmpresasLucroPresumidoList] = useState<EmpresaPlanilha[]>(() => {
-    const savedLists = localStorage.getItem('planilhaGeral_empresasLists');
-    if (savedLists) {
-      const parsed = JSON.parse(savedLists);
-      return parsed.lucroPresumido || empresasLucroPresumido;
-    }
-    return empresasLucroPresumido;
-  });
-  const [empresasSemMovimentoList, setEmpresasSemMovimentoList] = useState<EmpresaPlanilha[]>(() => {
-    const savedLists = localStorage.getItem('planilhaGeral_empresasLists');
-    if (savedLists) {
-      const parsed = JSON.parse(savedLists);
-      return parsed.semMovimento || empresasSemMovimento;
-    }
-    return empresasSemMovimento;
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [dbInitialized, setDbInitialized] = useState(false);
 
-  // Salvar listas no localStorage quando mudarem
+  const [savedDataMap, setSavedDataMap] = useState<Record<string, EmpresaSavedData>>({});
+  
+  const [empresasLucroRealList, setEmpresasLucroRealList] = useState<EmpresaPlanilha[]>(empresasLucroReal);
+  const [empresasLucroPresumidoList, setEmpresasLucroPresumidoList] = useState<EmpresaPlanilha[]>(empresasLucroPresumido);
+  const [empresasSemMovimentoList, setEmpresasSemMovimentoList] = useState<EmpresaPlanilha[]>(empresasSemMovimento);
+
+  // Carregar dados do banco de dados na inicialização
   useEffect(() => {
+    const loadFromDatabase = async () => {
+      try {
+        // Carregar empresas do banco
+        const { data: dbEmpresas, error: empresasError } = await (supabase
+          .from('planilha_geral_empresas') as any)
+          .select('*');
+
+        if (empresasError) {
+          console.error('Erro ao carregar empresas:', empresasError);
+          // Fallback para localStorage
+          const savedLists = localStorage.getItem('planilhaGeral_empresasLists');
+          if (savedLists) {
+            const parsed = JSON.parse(savedLists);
+            if (parsed.lucroReal) setEmpresasLucroRealList(parsed.lucroReal);
+            if (parsed.lucroPresumido) setEmpresasLucroPresumidoList(parsed.lucroPresumido);
+            if (parsed.semMovimento) setEmpresasSemMovimentoList(parsed.semMovimento);
+          }
+        } else if (dbEmpresas && dbEmpresas.length > 0) {
+          // Converter dados do banco para o formato da aplicação
+          const lucroReal: EmpresaPlanilha[] = [];
+          const lucroPresumido: EmpresaPlanilha[] = [];
+          const semMovimento: EmpresaPlanilha[] = [];
+
+          dbEmpresas.forEach((emp: any) => {
+            const empresa: EmpresaPlanilha = {
+              id: emp.id,
+              cod: emp.cod || '',
+              cnpj: emp.cnpj || '',
+              empresa: emp.empresa,
+              solicitacao: emp.solicitacao || false,
+              despesas: emp.despesas || false,
+              misterContDig: emp.mister_cont_dig || false,
+              conferirExtratos: emp.conferir_extratos || false,
+              conciliacaoImpostos: emp.conciliacao_impostos || false,
+              darf: emp.darf || false,
+              anotacao: emp.anotacao || '',
+              trimestreNum: emp.trimestre_num || '',
+              dataFechamento: emp.data_fechamento || '',
+              trimestre: emp.trimestre || '',
+              lalur: emp.lalur || '',
+              contDigital: emp.cont_digital || '',
+              regime: emp.regime || '',
+              situacao: emp.situacao || '',
+              mensalidades: emp.mensalidades || '',
+              regimeAnoAnterior: emp.regime_ano_anterior || '',
+            };
+
+            if (emp.tab === 'lucro-presumido') lucroPresumido.push(empresa);
+            else if (emp.tab === 'sem-movimento') semMovimento.push(empresa);
+            else lucroReal.push(empresa);
+          });
+
+          setEmpresasLucroRealList(lucroReal);
+          setEmpresasLucroPresumidoList(lucroPresumido);
+          setEmpresasSemMovimentoList(semMovimento);
+        } else {
+          // Banco vazio - usar dados mock e salvar no banco
+          const allEmpresas = [
+            ...empresasLucroReal.map(e => ({ ...e, tab: 'lucro-real' })),
+            ...empresasLucroPresumido.map(e => ({ ...e, tab: 'lucro-presumido' })),
+            ...empresasSemMovimento.map(e => ({ ...e, tab: 'sem-movimento' })),
+          ];
+
+          for (const emp of allEmpresas) {
+            await (supabase.from('planilha_geral_empresas') as any).upsert({
+              id: emp.id,
+              cod: emp.cod,
+              cnpj: emp.cnpj || '',
+              empresa: emp.empresa,
+              solicitacao: emp.solicitacao,
+              despesas: emp.despesas,
+              mister_cont_dig: emp.misterContDig,
+              conferir_extratos: emp.conferirExtratos,
+              conciliacao_impostos: emp.conciliacaoImpostos,
+              darf: emp.darf,
+              anotacao: emp.anotacao,
+              trimestre_num: emp.trimestreNum,
+              data_fechamento: emp.dataFechamento,
+              trimestre: emp.trimestre,
+              lalur: emp.lalur,
+              cont_digital: emp.contDigital,
+              regime: emp.regime,
+              situacao: emp.situacao,
+              mensalidades: emp.mensalidades,
+              regime_ano_anterior: emp.regimeAnoAnterior,
+              tab: emp.tab,
+            });
+          }
+        }
+
+        // Carregar savedDataMap do banco
+        const { data: dbSavedData, error: savedError } = await (supabase
+          .from('planilha_geral_saved_data') as any)
+          .select('*');
+
+        if (savedError) {
+          console.error('Erro ao carregar saved data:', savedError);
+          const saved = localStorage.getItem('planilhaGeral_savedDataMap');
+          if (saved) setSavedDataMap(JSON.parse(saved));
+        } else if (dbSavedData && dbSavedData.length > 0) {
+          const map: Record<string, EmpresaSavedData> = {};
+          dbSavedData.forEach((sd: any) => {
+            map[sd.empresa_id] = {
+              codigo: sd.codigo || '',
+              cnpj: sd.cnpj || '',
+              checklistItems: sd.checklist_items || [],
+              anotacoes: sd.anotacoes || [],
+              trimestre: sd.trimestre || '',
+              lalur: sd.lalur || emptyLalurState,
+              contDigital: sd.cont_digital || '',
+              regime: sd.regime || '',
+              situacao: sd.situacao || '',
+              mensalidades: sd.mensalidades || '',
+              regimeAnoAnterior: sd.regime_ano_anterior || '',
+            };
+          });
+          setSavedDataMap(map);
+        } else {
+          // Tentar carregar do localStorage como fallback
+          const saved = localStorage.getItem('planilhaGeral_savedDataMap');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setSavedDataMap(parsed);
+            // Salvar no banco
+            for (const [empresaId, data] of Object.entries(parsed)) {
+              const sd = data as EmpresaSavedData;
+              await (supabase.from('planilha_geral_saved_data') as any).upsert({
+                empresa_id: empresaId,
+                codigo: sd.codigo,
+                cnpj: sd.cnpj,
+                checklist_items: sd.checklistItems,
+                anotacoes: sd.anotacoes,
+                trimestre: sd.trimestre,
+                lalur: sd.lalur,
+                cont_digital: sd.contDigital,
+                regime: sd.regime,
+                situacao: sd.situacao,
+                mensalidades: sd.mensalidades,
+                regime_ano_anterior: sd.regimeAnoAnterior,
+              });
+            }
+          }
+        }
+
+        setDbInitialized(true);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFromDatabase();
+  }, []);
+
+  // Função auxiliar para salvar empresa no banco
+  const saveEmpresaToDb = async (empresa: EmpresaPlanilha, tab: string) => {
+    await (supabase.from('planilha_geral_empresas') as any).upsert({
+      id: empresa.id,
+      cod: empresa.cod,
+      cnpj: empresa.cnpj || '',
+      empresa: empresa.empresa,
+      solicitacao: empresa.solicitacao,
+      despesas: empresa.despesas,
+      mister_cont_dig: empresa.misterContDig,
+      conferir_extratos: empresa.conferirExtratos,
+      conciliacao_impostos: empresa.conciliacaoImpostos,
+      darf: empresa.darf,
+      anotacao: empresa.anotacao,
+      trimestre_num: empresa.trimestreNum,
+      data_fechamento: empresa.dataFechamento,
+      trimestre: empresa.trimestre,
+      lalur: empresa.lalur,
+      cont_digital: empresa.contDigital,
+      regime: empresa.regime,
+      situacao: empresa.situacao,
+      mensalidades: empresa.mensalidades,
+      regime_ano_anterior: empresa.regimeAnoAnterior,
+      tab,
+    });
+  };
+
+  // Função para salvar savedData no banco
+  const saveSavedDataToDb = async (empresaId: string, data: EmpresaSavedData) => {
+    await (supabase.from('planilha_geral_saved_data') as any).upsert({
+      empresa_id: empresaId,
+      codigo: data.codigo,
+      cnpj: data.cnpj,
+      checklist_items: data.checklistItems,
+      anotacoes: data.anotacoes,
+      trimestre: data.trimestre,
+      lalur: data.lalur,
+      cont_digital: data.contDigital,
+      regime: data.regime,
+      situacao: data.situacao,
+      mensalidades: data.mensalidades,
+      regime_ano_anterior: data.regimeAnoAnterior,
+    });
+  };
+
+  // Manter localStorage como backup
+  useEffect(() => {
+    if (!dbInitialized) return;
     localStorage.setItem('planilhaGeral_empresasLists', JSON.stringify({
       lucroReal: empresasLucroRealList,
       lucroPresumido: empresasLucroPresumidoList,
       semMovimento: empresasSemMovimentoList,
     }));
-  }, [empresasLucroRealList, empresasLucroPresumidoList, empresasSemMovimentoList]);
+  }, [empresasLucroRealList, empresasLucroPresumidoList, empresasSemMovimentoList, dbInitialized]);
 
-  // Salvar savedDataMap no localStorage quando mudar
   useEffect(() => {
+    if (!dbInitialized) return;
     localStorage.setItem('planilhaGeral_savedDataMap', JSON.stringify(savedDataMap));
-  }, [savedDataMap]);
+  }, [savedDataMap, dbInitialized]);
   
   // Estados para alíquotas editáveis
   const [lucroRealData, setLucroRealData] = useState(lucroRealAliquotas);
@@ -1124,6 +1305,10 @@ const PlanilhaGeral: React.FC = () => {
 
         setter(updatedList);
 
+        // Salvar todas as empresas importadas/atualizadas no banco
+        const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : 'sem-movimento';
+        updatedList.forEach(emp => saveEmpresaToDb(emp, tabName));
+
         const messages: string[] = [];
         if (importedCount > 0) messages.push(`${importedCount} empresa(s) importada(s)`);
         if (updatedCount > 0) messages.push(`${updatedCount} empresa(s) atualizada(s)`);
@@ -1169,9 +1354,12 @@ const PlanilhaGeral: React.FC = () => {
     } else {
       setEmpresasSemMovimentoList(prev => [...prev, newEmpresa]);
     }
+
+    // Salvar no banco
+    saveEmpresaToDb(newEmpresa, activeTab);
   };
 
-  const handleRemoveEmpresa = (empresaId: string) => {
+  const handleRemoveEmpresa = async (empresaId: string) => {
     if (activeTab === 'lucro-real') {
       setEmpresasLucroRealList(prev => prev.filter(e => e.id !== empresaId));
     } else if (activeTab === 'lucro-presumido') {
@@ -1185,6 +1373,10 @@ const PlanilhaGeral: React.FC = () => {
       delete newMap[empresaId];
       return newMap;
     });
+
+    // Remover do banco
+    await (supabase.from('planilha_geral_empresas') as any).delete().eq('id', empresaId);
+    await (supabase.from('planilha_geral_saved_data') as any).delete().eq('empresa_id', empresaId);
   };
 
   const getActiveEmpresas = () => {
@@ -1256,7 +1448,7 @@ const PlanilhaGeral: React.FC = () => {
     setSheetOpen(true);
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (!selectedEmpresa) return;
     
     // Se houver nova anotação, adicionar à lista antes de salvar
@@ -1290,6 +1482,9 @@ const PlanilhaGeral: React.FC = () => {
       [selectedEmpresa.id]: newSavedData
     }));
 
+    // Salvar savedData no banco
+    saveSavedDataToDb(selectedEmpresa.id, newSavedData);
+
     // Determinar para qual aba a empresa deve ir baseado na situação
     const situacaoLower = editState.situacao.toLowerCase();
     const isSaiu = situacaoLower === 'saiu';
@@ -1302,7 +1497,6 @@ const PlanilhaGeral: React.FC = () => {
     if (isSaiu || isSemMovimento) {
       targetTab = 'sem-movimento';
     } else if (isComMovimento || editState.situacao === '') {
-      // Se tem movimento ou situação não definida, usar o regime para determinar a aba
       const regimeLower = editState.regime.toLowerCase();
       if (regimeLower.includes('real')) {
         targetTab = 'lucro-real';
@@ -1312,6 +1506,13 @@ const PlanilhaGeral: React.FC = () => {
     }
 
     // Mover empresa entre abas se necessário
+    const updatedEmpresa = { 
+      ...selectedEmpresa,
+      situacao: editState.situacao,
+      regime: editState.regime,
+    };
+    const finalTab = targetTab || activeTab;
+
     if (targetTab && targetTab !== activeTab) {
       // Remover da aba atual
       if (activeTab === 'lucro-real') {
@@ -1322,12 +1523,7 @@ const PlanilhaGeral: React.FC = () => {
         setEmpresasSemMovimentoList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
       }
 
-      // Adicionar na aba de destino com os dados atualizados
-      const updatedEmpresa = { 
-        ...selectedEmpresa,
-        situacao: editState.situacao,
-        regime: editState.regime,
-      };
+      // Adicionar na aba de destino
       if (targetTab === 'lucro-real') {
         setEmpresasLucroRealList(prev => [updatedEmpresa, ...prev]);
       } else if (targetTab === 'lucro-presumido') {
@@ -1336,7 +1532,6 @@ const PlanilhaGeral: React.FC = () => {
         setEmpresasSemMovimentoList(prev => [updatedEmpresa, ...prev]);
       }
 
-      // Mostrar mensagem de movimentação
       const tabNames: Record<string, string> = {
         'lucro-real': 'Lucro Real',
         'lucro-presumido': 'Lucro Presumido',
@@ -1345,6 +1540,9 @@ const PlanilhaGeral: React.FC = () => {
       
       toast.success(`Empresa movida para a aba "${tabNames[targetTab!]}"`);
     }
+
+    // Salvar empresa no banco com a aba correta
+    saveEmpresaToDb(updatedEmpresa, finalTab);
     
     // Limpar campo de nova anotação
     setEditState(prev => ({ ...prev, novaAnotacao: '' }));

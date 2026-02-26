@@ -14,6 +14,135 @@ export type Database = {
   }
   public: {
     Tables: {
+      planilha_geral_empresas: {
+        Row: {
+          anotacao: string | null
+          cnpj: string | null
+          cod: string | null
+          conciliacao_impostos: boolean | null
+          conferir_extratos: boolean | null
+          cont_digital: string | null
+          created_at: string
+          darf: boolean | null
+          data_fechamento: string | null
+          despesas: boolean | null
+          empresa: string
+          id: string
+          lalur: string | null
+          mensalidades: string | null
+          mister_cont_dig: boolean | null
+          regime: string | null
+          regime_ano_anterior: string | null
+          situacao: string | null
+          solicitacao: boolean | null
+          tab: string
+          trimestre: string | null
+          trimestre_num: string | null
+          updated_at: string
+        }
+        Insert: {
+          anotacao?: string | null
+          cnpj?: string | null
+          cod?: string | null
+          conciliacao_impostos?: boolean | null
+          conferir_extratos?: boolean | null
+          cont_digital?: string | null
+          created_at?: string
+          darf?: boolean | null
+          data_fechamento?: string | null
+          despesas?: boolean | null
+          empresa: string
+          id: string
+          lalur?: string | null
+          mensalidades?: string | null
+          mister_cont_dig?: boolean | null
+          regime?: string | null
+          regime_ano_anterior?: string | null
+          situacao?: string | null
+          solicitacao?: boolean | null
+          tab?: string
+          trimestre?: string | null
+          trimestre_num?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anotacao?: string | null
+          cnpj?: string | null
+          cod?: string | null
+          conciliacao_impostos?: boolean | null
+          conferir_extratos?: boolean | null
+          cont_digital?: string | null
+          created_at?: string
+          darf?: boolean | null
+          data_fechamento?: string | null
+          despesas?: boolean | null
+          empresa?: string
+          id?: string
+          lalur?: string | null
+          mensalidades?: string | null
+          mister_cont_dig?: boolean | null
+          regime?: string | null
+          regime_ano_anterior?: string | null
+          situacao?: string | null
+          solicitacao?: boolean | null
+          tab?: string
+          trimestre?: string | null
+          trimestre_num?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      planilha_geral_saved_data: {
+        Row: {
+          anotacoes: Json | null
+          checklist_items: Json | null
+          cnpj: string | null
+          codigo: string | null
+          cont_digital: string | null
+          created_at: string
+          empresa_id: string
+          lalur: Json | null
+          mensalidades: string | null
+          regime: string | null
+          regime_ano_anterior: string | null
+          situacao: string | null
+          trimestre: string | null
+          updated_at: string
+        }
+        Insert: {
+          anotacoes?: Json | null
+          checklist_items?: Json | null
+          cnpj?: string | null
+          codigo?: string | null
+          cont_digital?: string | null
+          created_at?: string
+          empresa_id: string
+          lalur?: Json | null
+          mensalidades?: string | null
+          regime?: string | null
+          regime_ano_anterior?: string | null
+          situacao?: string | null
+          trimestre?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anotacoes?: Json | null
+          checklist_items?: Json | null
+          cnpj?: string | null
+          codigo?: string | null
+          cont_digital?: string | null
+          created_at?: string
+          empresa_id?: string
+          lalur?: Json | null
+          mensalidades?: string | null
+          regime?: string | null
+          regime_ano_anterior?: string | null
+          situacao?: string | null
+          trimestre?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
