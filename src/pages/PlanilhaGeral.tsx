@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, ChevronDown, Check, MessageSquare, Eye, Pencil, UserMinus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, ChevronDown, Check, MessageSquare, Eye, Pencil, UserMinus, Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
@@ -1021,6 +1022,122 @@ const PlanilhaGeral: React.FC = () => {
     regimeAnoAnterior: '',
   });
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Função para importar planilha
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = evt.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet);
+
+        if (jsonData.length === 0) {
+          toast.error('Planilha vazia ou formato inválido');
+          return;
+        }
+
+        // Detectar colunas automaticamente (case-insensitive)
+        const findCol = (row: Record<string, any>, names: string[]) => {
+          const keys = Object.keys(row);
+          for (const name of names) {
+            const found = keys.find(k => k.toLowerCase().trim().includes(name.toLowerCase()));
+            if (found) return found;
+          }
+          return null;
+        };
+
+        const firstRow = jsonData[0];
+        const empresaCol = findCol(firstRow, ['empresa', 'razão social', 'razao social', 'nome']);
+        const cnpjCol = findCol(firstRow, ['cnpj']);
+        const codCol = findCol(firstRow, ['cod', 'código', 'codigo']);
+
+        if (!empresaCol) {
+          toast.error('Coluna "Empresa" não encontrada na planilha. Verifique se a planilha possui uma coluna com o nome da empresa.');
+          return;
+        }
+
+        let importedCount = 0;
+        let updatedCount = 0;
+
+        const getListAndSetter = () => {
+          if (activeTab === 'lucro-real') return { list: empresasLucroRealList, setter: setEmpresasLucroRealList, regime: 'Lucro real' };
+          if (activeTab === 'lucro-presumido') return { list: empresasLucroPresumidoList, setter: setEmpresasLucroPresumidoList, regime: 'Lucro presumido' };
+          return { list: empresasSemMovimentoList, setter: setEmpresasSemMovimentoList, regime: '' };
+        };
+
+        const { list, setter, regime } = getListAndSetter();
+        const updatedList = [...list];
+
+        jsonData.forEach((row) => {
+          const empresaNome = String(row[empresaCol] || '').trim();
+          if (!empresaNome) return;
+
+          const cnpj = cnpjCol ? String(row[cnpjCol] || '').trim() : '';
+          const cod = codCol ? String(row[codCol] || '').trim() : '';
+
+          // Tentar encontrar empresa existente por CNPJ ou nome
+          const existingIndex = updatedList.findIndex(emp => 
+            (cnpj && emp.cnpj === cnpj) || 
+            emp.empresa.toLowerCase() === empresaNome.toLowerCase()
+          );
+
+          if (existingIndex >= 0) {
+            // Atualizar empresa existente
+            if (cnpj) updatedList[existingIndex] = { ...updatedList[existingIndex], cnpj };
+            if (cod) updatedList[existingIndex] = { ...updatedList[existingIndex], cod };
+            updatedCount++;
+          } else {
+            // Criar nova empresa
+            const newEmpresa: EmpresaPlanilha = {
+              id: `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              cod,
+              cnpj,
+              empresa: empresaNome,
+              solicitacao: false,
+              despesas: false,
+              misterContDig: false,
+              conferirExtratos: false,
+              conciliacaoImpostos: false,
+              darf: false,
+              anotacao: '',
+              trimestreNum: '',
+              dataFechamento: '',
+              trimestre: '',
+              lalur: '',
+              contDigital: '',
+              regime,
+              situacao: '',
+              mensalidades: '',
+              regimeAnoAnterior: '',
+            };
+            updatedList.push(newEmpresa);
+            importedCount++;
+          }
+        });
+
+        setter(updatedList);
+
+        const messages: string[] = [];
+        if (importedCount > 0) messages.push(`${importedCount} empresa(s) importada(s)`);
+        if (updatedCount > 0) messages.push(`${updatedCount} empresa(s) atualizada(s)`);
+        toast.success(messages.join(' e ') || 'Nenhuma alteração detectada');
+      } catch (error) {
+        console.error('Erro ao importar planilha:', error);
+        toast.error('Erro ao importar planilha. Verifique o formato do arquivo.');
+      }
+    };
+    reader.readAsBinaryString(file);
+    // Reset input para permitir reimportar o mesmo arquivo
+    e.target.value = '';
+  };
+
   // Funções para adicionar empresas
   const handleAddEmpresa = (data: Record<string, string>) => {
     const newEmpresa: EmpresaPlanilha = {
@@ -1434,19 +1551,32 @@ const PlanilhaGeral: React.FC = () => {
                 SAIU / SEM MOVIMENTO
               </TabsTrigger>
             </TabsList>
-            <AddEntityDialog
-              title="Adicionar Empresa"
-              buttonLabel="Adicionar Empresa"
-              fields={[
-                { name: 'empresa', label: 'Nome da Empresa', type: 'text', placeholder: 'Nome da empresa', required: true },
-                { name: 'cod', label: 'Código', type: 'text', placeholder: 'Ex: 123' },
-                { name: 'regime', label: 'Regime Tributário', type: 'select', options: [
-                  { value: 'Lucro real', label: 'Lucro Real' },
-                  { value: 'Lucro presumido', label: 'Lucro Presumido' },
-                ] },
-              ]}
-              onAdd={handleAddEmpresa}
-            />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="h-4 w-4 mr-2" />
+                Importar Planilha
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                className="hidden"
+                onChange={handleImportFile}
+              />
+              <AddEntityDialog
+                title="Adicionar Empresa"
+                buttonLabel="Adicionar Empresa"
+                fields={[
+                  { name: 'empresa', label: 'Nome da Empresa', type: 'text', placeholder: 'Nome da empresa', required: true },
+                  { name: 'cod', label: 'Código', type: 'text', placeholder: 'Ex: 123' },
+                  { name: 'regime', label: 'Regime Tributário', type: 'select', options: [
+                    { value: 'Lucro real', label: 'Lucro Real' },
+                    { value: 'Lucro presumido', label: 'Lucro Presumido' },
+                  ] },
+                ]}
+                onAdd={handleAddEmpresa}
+              />
+            </div>
           </div>
 
           <div className="border border-border rounded-sm overflow-hidden">
