@@ -1216,7 +1216,7 @@ const PlanilhaGeral: React.FC = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const data = evt.target?.result;
         const workbook = XLSX.read(data, { type: 'binary' });
@@ -1320,9 +1320,16 @@ const PlanilhaGeral: React.FC = () => {
 
         setter(updatedList);
 
-        // Salvar todas as empresas importadas/atualizadas no banco
+        // Salvar todas as empresas importadas/atualizadas no banco de forma sequencial
         const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : 'sem-movimento';
-        updatedList.forEach(emp => saveEmpresaToDb(emp, tabName));
+        
+        for (const emp of updatedList) {
+          try {
+            await saveEmpresaToDb(emp, tabName);
+          } catch (err) {
+            console.error('Erro ao salvar empresa importada:', emp.empresa, err);
+          }
+        }
 
         const messages: string[] = [];
         if (importedCount > 0) messages.push(`${importedCount} empresa(s) importada(s)`);
