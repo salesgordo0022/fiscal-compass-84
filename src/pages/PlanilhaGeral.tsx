@@ -1229,7 +1229,7 @@ const PlanilhaGeral: React.FC = () => {
           return;
         }
 
-        // Detectar colunas automaticamente (case-insensitive)
+        // Detectar colunas automaticamente (case-insensitive, suporta múltiplos modelos)
         const findCol = (row: Record<string, any>, names: string[]) => {
           const keys = Object.keys(row);
           for (const name of names) {
@@ -1240,12 +1240,20 @@ const PlanilhaGeral: React.FC = () => {
         };
 
         const firstRow = jsonData[0];
-        const empresaCol = findCol(firstRow, ['empresa', 'razão social', 'razao social', 'nome']);
-        const cnpjCol = findCol(firstRow, ['cnpj']);
-        const codCol = findCol(firstRow, ['cod', 'código', 'codigo']);
+        
+        // Modelos de coluna suportados:
+        // Modelo 1: Empresa, CNPJ, Cod
+        // Modelo 2: # (cod), CNPJCPF/CEI (cnpj), Número (cod alt), Apelido (empresa), Tributação (regime)
+        // Modelo 3: Razão Social, CNPJ/CPF, Código
+        // Modelo 4: Nome, CPF/CNPJ, Regime
+        const empresaCol = findCol(firstRow, ['empresa', 'razão social', 'razao social', 'nome', 'apelido', 'nome fantasia', 'denominação', 'denominacao']);
+        const cnpjCol = findCol(firstRow, ['cnpj', 'cpf/cnpj', 'cnpj/cpf', 'cnpjcpf', 'cpf_cnpj', 'cnpj_cpf', 'cnpjcpf/cei', 'cpf']);
+        const codCol = findCol(firstRow, ['cod', 'código', 'codigo', 'numero', 'número', '#', 'id', 'seq']);
+        const regimeCol = findCol(firstRow, ['tributação', 'tributacao', 'regime', 'enquadramento', 'tipo']);
 
         if (!empresaCol) {
-          toast.error('Coluna "Empresa" não encontrada na planilha. Verifique se a planilha possui uma coluna com o nome da empresa.');
+          const colunasDetectadas = Object.keys(firstRow).join(', ');
+          toast.error(`Coluna de nome/empresa não encontrada. Colunas detectadas: ${colunasDetectadas}. Use uma destas: Empresa, Razão Social, Nome, Apelido.`);
           return;
         }
 
@@ -1264,6 +1272,8 @@ const PlanilhaGeral: React.FC = () => {
         jsonData.forEach((row) => {
           const empresaNome = String(row[empresaCol] || '').trim();
           if (!empresaNome) return;
+
+          const regimeValue = regimeCol ? String(row[regimeCol] || '').trim() : '';
 
           const cnpj = cnpjCol ? String(row[cnpjCol] || '').trim() : '';
           const cod = codCol ? String(row[codCol] || '').trim() : '';
@@ -1298,7 +1308,7 @@ const PlanilhaGeral: React.FC = () => {
               trimestre: '',
               lalur: '',
               contDigital: '',
-              regime,
+              regime: regimeValue || regime,
               situacao: '',
               mensalidades: '',
               regimeAnoAnterior: '',
