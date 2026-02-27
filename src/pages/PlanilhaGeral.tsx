@@ -1258,11 +1258,13 @@ const PlanilhaGeral: React.FC = () => {
         // Modelos de coluna suportados:
         // Modelo 1: Empresa, CNPJ, Cod
         // Modelo 2: # (cod), CNPJCPF/CEI (cnpj), Número (cod alt), Apelido (empresa), Tributação (regime)
+        // Modelo 2: # (cod), CNPJCPF/CEI (tipo - ignorar), Número (o número real do CNPJ/CPF), Apelido (empresa), Tributação (regime)
         // Modelo 3: Razão Social, CNPJ/CPF, Código
         // Modelo 4: Nome, CPF/CNPJ, Regime
         const empresaCol = findCol(firstRow, ['empresa', 'apelido', 'razão social', 'razao social', 'nome fantasia', 'denominação', 'denominacao', 'nome']);
-        const cnpjCol = findCol(firstRow, ['cnpj', 'cpf/cnpj', 'cnpj/cpf', 'cnpjcpf/cei', 'cnpjcpf', 'cpf_cnpj', 'cnpj_cpf', 'cpf']);
-        const codCol = findCol(firstRow, ['cod', 'código', 'codigo', '#', 'numero', 'número', 'id', 'seq']);
+        // "Número" contém o número real do CNPJ/CPF, então deve ser mapeado como cnpj
+        const cnpjCol = findCol(firstRow, ['numero', 'número', 'cnpj', 'cpf/cnpj', 'cnpj/cpf', 'cpf_cnpj', 'cnpj_cpf', 'cpf']);
+        const codCol = findCol(firstRow, ['cod', 'código', 'codigo', '#', 'id', 'seq']);
         const regimeCol = findCol(firstRow, ['tributação', 'tributacao', 'regime', 'enquadramento', 'tipo']);
 
         console.log('Mapeamento de colunas:', { empresaCol, cnpjCol, codCol, regimeCol });
