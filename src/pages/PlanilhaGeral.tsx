@@ -1274,73 +1274,72 @@ const PlanilhaGeral: React.FC = () => {
           return;
         }
 
-        let importedCount = 0;
-        let updatedCount = 0;
-
         const getListAndSetter = () => {
           if (activeTab === 'lucro-real') return { list: empresasLucroRealList, setter: setEmpresasLucroRealList, regime: 'Lucro real' };
           if (activeTab === 'lucro-presumido') return { list: empresasLucroPresumidoList, setter: setEmpresasLucroPresumidoList, regime: 'Lucro presumido' };
           return { list: empresasSemMovimentoList, setter: setEmpresasSemMovimentoList, regime: '' };
         };
 
-        const { list, setter, regime } = getListAndSetter();
-        const updatedList = [...list];
+        const { setter, regime } = getListAndSetter();
+        const newList: EmpresaPlanilha[] = [];
+        const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : 'sem-movimento';
 
+        // 1. Apagar todas as empresas da aba atual no banco
+        try {
+          const { error: deleteError } = await (supabase
+            .from('planilha_geral_empresas') as any)
+            .delete()
+            .eq('tab', tabName);
+          if (deleteError) {
+            console.error('Erro ao apagar empresas da aba:', deleteError);
+          } else {
+            console.log('Empresas da aba', tabName, 'apagadas com sucesso');
+          }
+        } catch (err) {
+          console.error('Erro ao apagar empresas:', err);
+        }
+
+        // 2. Criar novas empresas a partir da planilha
         jsonData.forEach((row) => {
           const empresaNome = String(row[empresaCol] || '').trim();
           if (!empresaNome) return;
 
           const regimeValue = regimeCol ? String(row[regimeCol] || '').trim() : '';
-
           const cnpj = cnpjCol ? String(row[cnpjCol] || '').trim() : '';
           const cod = codCol ? String(row[codCol] || '').trim() : '';
 
-          // Tentar encontrar empresa existente por CNPJ ou nome
-          const existingIndex = updatedList.findIndex(emp => 
-            (cnpj && emp.cnpj === cnpj) || 
-            emp.empresa.toLowerCase() === empresaNome.toLowerCase()
-          );
-
-          if (existingIndex >= 0) {
-            // Atualizar empresa existente
-            if (cnpj) updatedList[existingIndex] = { ...updatedList[existingIndex], cnpj };
-            if (cod) updatedList[existingIndex] = { ...updatedList[existingIndex], cod };
-            updatedCount++;
-          } else {
-            // Criar nova empresa
-            const newEmpresa: EmpresaPlanilha = {
-              id: `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              cod,
-              cnpj,
-              empresa: empresaNome,
-              solicitacao: false,
-              despesas: false,
-              misterContDig: false,
-              conferirExtratos: false,
-              conciliacaoImpostos: false,
-              darf: false,
-              anotacao: '',
-              trimestreNum: '',
-              dataFechamento: '',
-              trimestre: '',
-              lalur: '',
-              contDigital: '',
-              regime: regimeValue || regime,
-              situacao: '',
-              mensalidades: '',
-              regimeAnoAnterior: '',
-            };
-            updatedList.push(newEmpresa);
-            importedCount++;
-          }
+          const newEmpresa: EmpresaPlanilha = {
+            id: `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            cod,
+            cnpj,
+            empresa: empresaNome,
+            solicitacao: false,
+            despesas: false,
+            misterContDig: false,
+            conferirExtratos: false,
+            conciliacaoImpostos: false,
+            darf: false,
+            anotacao: '',
+            trimestreNum: '',
+            dataFechamento: '',
+            trimestre: '',
+            lalur: '',
+            contDigital: '',
+            regime: regimeValue || regime,
+            situacao: '',
+            mensalidades: '',
+            regimeAnoAnterior: '',
+          };
+          newList.push(newEmpresa);
         });
 
-        setter(updatedList);
+        console.log('Empresas para importar:', newList.length);
 
-        // Salvar todas as empresas importadas/atualizadas no banco de forma sequencial
-        const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : 'sem-movimento';
-        
-        for (const emp of updatedList) {
+        // 3. Atualizar estado local imediatamente
+        setter(newList);
+
+        // 4. Salvar no banco
+        for (const emp of newList) {
           try {
             await saveEmpresaToDb(emp, tabName);
           } catch (err) {
@@ -1348,10 +1347,7 @@ const PlanilhaGeral: React.FC = () => {
           }
         }
 
-        const messages: string[] = [];
-        if (importedCount > 0) messages.push(`${importedCount} empresa(s) importada(s)`);
-        if (updatedCount > 0) messages.push(`${updatedCount} empresa(s) atualizada(s)`);
-        toast.success(messages.join(' e ') || 'Nenhuma alteração detectada');
+        toast.success(`${newList.length} empresa(s) importada(s) na aba ${tabName}`);
       } catch (error) {
         console.error('Erro ao importar planilha:', error);
         toast.error('Erro ao importar planilha. Verifique o formato do arquivo.');
