@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import PageDescription from '@/components/layout/PageDescription';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, MessageSquare, SquarePen, Trash2, Copy, X, Plus } from 'lucide-react';
+import { Eye, MessageSquare, SquarePen, Trash2, Copy, X, Plus, Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -105,6 +106,9 @@ const TerceiroSetor: React.FC = () => {
   const [editingAnotacaoIndex, setEditingAnotacaoIndex] = useState<number | null>(null);
   const [editingAnotacaoText, setEditingAnotacaoText] = useState('');
   const [atividades, setAtividades] = useState<AtividadeTerceiroSetor[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
+  const [activeTab, setActiveTab] = useState('entidades');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -116,6 +120,101 @@ const TerceiroSetor: React.FC = () => {
     cnpj: '',
     dataRotina: '',
   });
+
+  // Importar planilha
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const data = evt.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet);
+
+        if (jsonData.length === 0) {
+          toast.error('Planilha vazia ou formato inválido');
+          setIsImporting(false);
+          return;
+        }
+
+        const firstRow = jsonData[0];
+        const columnHeaders = Object.keys(firstRow);
+        console.log('Colunas detectadas:', columnHeaders);
+
+        const findCol = (row: Record<string, any>, names: string[]) => {
+          const keys = Object.keys(row);
+          for (const name of names) {
+            const found = keys.find(k => k.toLowerCase().trim() === name.toLowerCase());
+            if (found) return found;
+          }
+          for (const name of names) {
+            const found = keys.find(k => k.toLowerCase().trim().includes(name.toLowerCase()));
+            if (found) return found;
+          }
+          return null;
+        };
+
+        const empresaCol = findCol(firstRow, ['empresa', 'apelido', 'razão social', 'razao social', 'nome fantasia', 'denominação', 'denominacao', 'nome', 'entidade']);
+        const cnpjCol = findCol(firstRow, ['numero', 'número', 'cnpj', 'cpf/cnpj', 'cnpj/cpf', 'cnpjcpf/cei', 'cnpjcpf', 'cpf']);
+        const codCol = findCol(firstRow, ['cod', 'código', 'codigo', '#', 'id', 'seq']);
+
+        if (!empresaCol) {
+          toast.error(`Coluna de nome não encontrada. Colunas: ${columnHeaders.join(', ')}`);
+          setIsImporting(false);
+          return;
+        }
+
+        console.log('Mapeamento:', { empresaCol, cnpjCol, codCol });
+
+        const newList: EntidadeTerceiroSetor[] = [];
+        jsonData.forEach((row) => {
+          const empresaNome = String(row[empresaCol] || '').trim();
+          if (!empresaNome) return;
+
+          const cnpj = cnpjCol ? String(row[cnpjCol] || '').trim() : '';
+          const cod = codCol ? String(row[codCol] || '').trim() : '';
+
+          newList.push({
+            id: `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            codigo: cod,
+            empresa: empresaNome,
+            atividades: [
+              { id: '1', nome: 'Lançamentos', concluida: false },
+              { id: '2', nome: 'Conciliação', concluida: false },
+              { id: '3', nome: 'Conferência', concluida: false },
+              { id: '4', nome: 'Fechamento', concluida: false },
+            ],
+            anotacao: '',
+            status: 'Com movimento',
+            modeloInform: '',
+            acessos: '',
+            cnpj,
+            dataRotina: '',
+          });
+        });
+
+        if (activeTab === 'entidades') {
+          setEntidades(newList);
+        } else {
+          setEntidadesSaiuState(newList);
+        }
+
+        toast.success(`${newList.length} entidade(s) importada(s)`);
+      } catch (error) {
+        console.error('Erro ao importar:', error);
+        toast.error('Erro ao importar planilha.');
+      } finally {
+        setIsImporting(false);
+      }
+    };
+    reader.readAsBinaryString(file);
+    e.target.value = '';
+  };
 
   // Stats - Combining both tabs
   const allEntidades = [...entidades, ...entidadesSaiuState];
@@ -268,7 +367,7 @@ const TerceiroSetor: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <Tabs defaultValue="entidades" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between mb-4">
             <TabsList className="bg-muted/50 p-1 rounded-lg">
               <TabsTrigger value="entidades" className="data-[state=active]:bg-background">
@@ -278,40 +377,66 @@ const TerceiroSetor: React.FC = () => {
                 SAIU
               </TabsTrigger>
             </TabsList>
-            <AddEntityDialog 
-              title="Adicionar Entidade"
-              buttonLabel="Adicionar Entidade"
-              fields={[
-                { name: 'empresa', label: 'Nome da Entidade', type: 'text', placeholder: 'Digite o nome da entidade...', required: true }
-              ]}
-              onAdd={(data) => {
-                const newEntidade: EntidadeTerceiroSetor = {
-                  id: `ts-${Date.now()}`,
-                  codigo: '',
-                  empresa: data.empresa,
-                  atividades: [
-                    { id: '1', nome: 'Lançamentos', concluida: false },
-                    { id: '2', nome: 'Conciliação', concluida: false },
-                    { id: '3', nome: 'Conferência', concluida: false },
-                    { id: '4', nome: 'Fechamento', concluida: false },
-                  ],
-                  anotacao: '',
-                  status: 'Com movimento',
-                  modeloInform: '',
-                  acessos: '',
-                  cnpj: '',
-                  dataRotina: new Date().toISOString().split('T')[0],
-                };
-                setEntidades(prev => [newEntidade, ...prev]);
-                toast.success('Entidade adicionada com sucesso!');
-              }}
-              trigger={
-                <Button size="sm" className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Adicionar Entidade
-                </Button>
-              }
-            />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                {isImporting ? (
+                  <>
+                    <div className="h-4 w-4 mr-2 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    Carregando planilha...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Importar Planilha
+                  </>
+                )}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                className="hidden"
+                onChange={handleImportFile}
+              />
+              <AddEntityDialog 
+                title="Adicionar Entidade"
+                buttonLabel="Adicionar Entidade"
+                fields={[
+                  { name: 'empresa', label: 'Nome da Entidade', type: 'text', placeholder: 'Digite o nome da entidade...', required: true }
+                ]}
+                onAdd={(data) => {
+                  const newEntidade: EntidadeTerceiroSetor = {
+                    id: `ts-${Date.now()}`,
+                    codigo: '',
+                    empresa: data.empresa,
+                    atividades: [
+                      { id: '1', nome: 'Lançamentos', concluida: false },
+                      { id: '2', nome: 'Conciliação', concluida: false },
+                      { id: '3', nome: 'Conferência', concluida: false },
+                      { id: '4', nome: 'Fechamento', concluida: false },
+                    ],
+                    anotacao: '',
+                    status: 'Com movimento',
+                    modeloInform: '',
+                    acessos: '',
+                    cnpj: '',
+                    dataRotina: new Date().toISOString().split('T')[0],
+                  };
+                  if (activeTab === 'entidades') {
+                    setEntidades(prev => [newEntidade, ...prev]);
+                  } else {
+                    setEntidadesSaiuState(prev => [newEntidade, ...prev]);
+                  }
+                  toast.success('Entidade adicionada com sucesso!');
+                }}
+                trigger={
+                  <Button size="sm" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Adicionar Entidade
+                  </Button>
+                }
+              />
+            </div>
           </div>
 
           <TabsContent value="entidades" className="mt-4">
