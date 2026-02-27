@@ -942,6 +942,7 @@ const PlanilhaGeral: React.FC = () => {
   const [regimeAnoPopoverOpen, setRegimeAnoPopoverOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [dbInitialized, setDbInitialized] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const [savedDataMap, setSavedDataMap] = useState<Record<string, EmpresaSavedData>>({});
   
@@ -1215,6 +1216,7 @@ const PlanilhaGeral: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsImporting(true);
     const reader = new FileReader();
     reader.onload = async (evt) => {
       try {
@@ -1338,6 +1340,8 @@ const PlanilhaGeral: React.FC = () => {
       } catch (error) {
         console.error('Erro ao importar planilha:', error);
         toast.error('Erro ao importar planilha. Verifique o formato do arquivo.');
+      } finally {
+        setIsImporting(false);
       }
     };
     reader.readAsBinaryString(file);
@@ -1772,9 +1776,18 @@ const PlanilhaGeral: React.FC = () => {
               </TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                <Upload className="h-4 w-4 mr-2" />
-                Importar Planilha
+              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isImporting}>
+                {isImporting ? (
+                  <>
+                    <div className="h-4 w-4 mr-2 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    Carregando planilha...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Importar Planilha
+                  </>
+                )}
               </Button>
               <input
                 ref={fileInputRef}
