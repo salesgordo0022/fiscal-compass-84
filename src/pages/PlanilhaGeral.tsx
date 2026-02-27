@@ -1226,36 +1226,51 @@ const PlanilhaGeral: React.FC = () => {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet);
 
+        console.log('Planilha lida. Linhas:', jsonData.length);
+
         if (jsonData.length === 0) {
           toast.error('Planilha vazia ou formato inválido');
+          setIsImporting(false);
           return;
         }
 
-        // Detectar colunas automaticamente (case-insensitive, suporta múltiplos modelos)
+        const firstRow = jsonData[0];
+        const columnHeaders = Object.keys(firstRow);
+        console.log('Colunas detectadas na planilha:', columnHeaders);
+
+        // Detectar colunas automaticamente (case-insensitive)
+        // Usa correspondência exata primeiro, depois parcial
         const findCol = (row: Record<string, any>, names: string[]) => {
           const keys = Object.keys(row);
+          // Primeiro: correspondência exata (ignorando case e espaços)
+          for (const name of names) {
+            const found = keys.find(k => k.toLowerCase().trim() === name.toLowerCase());
+            if (found) return found;
+          }
+          // Segundo: correspondência parcial (contém)
           for (const name of names) {
             const found = keys.find(k => k.toLowerCase().trim().includes(name.toLowerCase()));
             if (found) return found;
           }
           return null;
         };
-
-        const firstRow = jsonData[0];
         
         // Modelos de coluna suportados:
         // Modelo 1: Empresa, CNPJ, Cod
         // Modelo 2: # (cod), CNPJCPF/CEI (cnpj), Número (cod alt), Apelido (empresa), Tributação (regime)
         // Modelo 3: Razão Social, CNPJ/CPF, Código
         // Modelo 4: Nome, CPF/CNPJ, Regime
-        const empresaCol = findCol(firstRow, ['empresa', 'razão social', 'razao social', 'nome', 'apelido', 'nome fantasia', 'denominação', 'denominacao']);
-        const cnpjCol = findCol(firstRow, ['cnpj', 'cpf/cnpj', 'cnpj/cpf', 'cnpjcpf', 'cpf_cnpj', 'cnpj_cpf', 'cnpjcpf/cei', 'cpf']);
-        const codCol = findCol(firstRow, ['cod', 'código', 'codigo', 'numero', 'número', '#', 'id', 'seq']);
+        const empresaCol = findCol(firstRow, ['empresa', 'apelido', 'razão social', 'razao social', 'nome fantasia', 'denominação', 'denominacao', 'nome']);
+        const cnpjCol = findCol(firstRow, ['cnpj', 'cpf/cnpj', 'cnpj/cpf', 'cnpjcpf/cei', 'cnpjcpf', 'cpf_cnpj', 'cnpj_cpf', 'cpf']);
+        const codCol = findCol(firstRow, ['cod', 'código', 'codigo', '#', 'numero', 'número', 'id', 'seq']);
         const regimeCol = findCol(firstRow, ['tributação', 'tributacao', 'regime', 'enquadramento', 'tipo']);
 
+        console.log('Mapeamento de colunas:', { empresaCol, cnpjCol, codCol, regimeCol });
+
         if (!empresaCol) {
-          const colunasDetectadas = Object.keys(firstRow).join(', ');
+          const colunasDetectadas = columnHeaders.join(', ');
           toast.error(`Coluna de nome/empresa não encontrada. Colunas detectadas: ${colunasDetectadas}. Use uma destas: Empresa, Razão Social, Nome, Apelido.`);
+          setIsImporting(false);
           return;
         }
 
