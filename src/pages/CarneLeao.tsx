@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, MessageSquare, Eye, Copy, Check, UserMinus } from 'lucide-react';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
