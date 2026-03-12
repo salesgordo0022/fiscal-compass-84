@@ -243,7 +243,7 @@ const TerceiroSetor: React.FC = () => {
   const filteredEntidades = getFilteredEntidades().filter((e) =>
     entidadesFilters.matchesFilter(e.codigo, 'codigo') &&
     entidadesFilters.matchesFilter(e.empresa, 'empresa') &&
-    entidadesFilters.matchesFilter(e.status, 'status') &&
+    entidadesFilters.matchesSelectFilter(e.status, 'status') &&
     entidadesFilters.matchesFilter(e.dataRotina, 'dataRotina')
   );
 
