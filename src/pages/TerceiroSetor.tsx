@@ -250,7 +250,7 @@ const TerceiroSetor: React.FC = () => {
   const filteredSaiu = entidadesSaiuState.filter((e) =>
     saiuFilters.matchesFilter(e.codigo, 'codigo') &&
     saiuFilters.matchesFilter(e.empresa, 'empresa') &&
-    saiuFilters.matchesFilter(e.status, 'status') &&
+    saiuFilters.matchesSelectFilter(e.status, 'status') &&
     saiuFilters.matchesFilter(e.dataRotina, 'dataRotina')
   );
 
