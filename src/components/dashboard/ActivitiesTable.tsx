@@ -43,15 +43,15 @@ const PriorityBadge: React.FC<{ priority: Priority }> = ({ priority }) => {
 };
 
 const ActivitiesTable: React.FC = () => {
-  const { filters, setFilter, matchesFilter } = useColumnFilters(['activity', 'responsible', 'status', 'department', 'deadline', 'priority', 'client'] as const);
+  const { filters, setFilter, matchesFilter, matchesSelectFilter } = useColumnFilters(['activity', 'responsible', 'status', 'department', 'deadline', 'priority', 'client'] as const);
 
   const filteredActivities = mockActivities.filter((activity) =>
     matchesFilter(activity.activity, 'activity') &&
     matchesFilter(activity.responsible, 'responsible') &&
-    matchesFilter(getStatusLabel(activity.status), 'status') &&
-    matchesFilter(activity.department, 'department') &&
+    matchesSelectFilter(activity.status, 'status') &&
+    matchesSelectFilter(activity.department, 'department') &&
     matchesFilter(new Date(activity.deadline).toLocaleDateString('pt-BR'), 'deadline') &&
-    matchesFilter(getPriorityLabel(activity.priority), 'priority') &&
+    matchesSelectFilter(activity.priority, 'priority') &&
     matchesFilter(activity.client, 'client')
   );
 
@@ -75,14 +75,54 @@ const ActivitiesTable: React.FC = () => {
               <TableHead className="font-semibold">Cliente</TableHead>
             </TableRow>
             <TableRow className="bg-muted/20">
-              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.activity} onChange={(v) => setFilter('activity', v)} placeholder="Atividade..." /></TableHead>
-              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.responsible} onChange={(v) => setFilter('responsible', v)} placeholder="Responsável..." /></TableHead>
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.activity} onChange={(v) => setFilter('activity', v)} placeholder="Buscar atividade..." /></TableHead>
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.responsible} onChange={(v) => setFilter('responsible', v)} placeholder="Buscar responsável..." /></TableHead>
               <TableHead className="py-1 px-2" />
-              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.status} onChange={(v) => setFilter('status', v)} placeholder="Status..." /></TableHead>
-              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.department} onChange={(v) => setFilter('department', v)} placeholder="Depto..." /></TableHead>
-              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.deadline} onChange={(v) => setFilter('deadline', v)} placeholder="Prazo..." /></TableHead>
-              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.priority} onChange={(v) => setFilter('priority', v)} placeholder="Prioridade..." /></TableHead>
-              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.client} onChange={(v) => setFilter('client', v)} placeholder="Cliente..." /></TableHead>
+              <TableHead className="py-1 px-2">
+                <ColumnFilterInput 
+                  type="select" 
+                  value={filters.status} 
+                  onChange={(v) => setFilter('status', v)} 
+                  placeholder="Todos"
+                  options={[
+                    { value: 'finished', label: 'Finalizado' },
+                    { value: 'in-progress', label: 'Em andamento' },
+                    { value: 'waiting', label: 'Em espera' },
+                    { value: 'not-started', label: 'Não começou' },
+                    { value: 'cancelled', label: 'Cancelado' },
+                  ]}
+                />
+              </TableHead>
+              <TableHead className="py-1 px-2">
+                <ColumnFilterInput 
+                  type="select" 
+                  value={filters.department} 
+                  onChange={(v) => setFilter('department', v)} 
+                  placeholder="Todos"
+                  options={[
+                    { value: 'Contábil', label: 'Contábil' },
+                    { value: 'Fiscal', label: 'Fiscal' },
+                    { value: 'Pessoal', label: 'Pessoal' },
+                    { value: 'Societário', label: 'Societário' },
+                    { value: 'Consultoria', label: 'Consultoria' },
+                  ]}
+                />
+              </TableHead>
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.deadline} onChange={(v) => setFilter('deadline', v)} placeholder="Buscar prazo..." /></TableHead>
+              <TableHead className="py-1 px-2">
+                <ColumnFilterInput 
+                  type="select" 
+                  value={filters.priority} 
+                  onChange={(v) => setFilter('priority', v)} 
+                  placeholder="Todos"
+                  options={[
+                    { value: 'high', label: 'Alta' },
+                    { value: 'medium', label: 'Média' },
+                    { value: 'low', label: 'Baixa' },
+                  ]}
+                />
+              </TableHead>
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.client} onChange={(v) => setFilter('client', v)} placeholder="Buscar cliente..." /></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

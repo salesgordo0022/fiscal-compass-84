@@ -129,7 +129,7 @@ interface EcdEcfTableProps {
 }
 
 const EcdEcfTable: React.FC<EcdEcfTableProps> = ({ empresas, tipo, onEmpresaClick, savedDataMap, onToggleStatus }) => {
-  const { filters, setFilter, matchesFilter } = useColumnFilters(['empresa', 'status', 'data'] as const);
+  const { filters, setFilter, matchesFilter, matchesSelectFilter } = useColumnFilters(['empresa', 'status', 'data'] as const);
   
   const getEmpresaData = (empresa: EmpresaEcdEcf) => {
     const saved = savedDataMap[empresa.id];
@@ -148,11 +148,22 @@ const EcdEcfTable: React.FC<EcdEcfTableProps> = ({ empresas, tipo, onEmpresaClic
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[120px] text-center">Data</TableHead>
           </TableRow>
           <TableRow className="border-b border-border bg-muted/20">
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.empresa} onChange={(v) => setFilter('empresa', v)} placeholder="Empresa..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.empresa} onChange={(v) => setFilter('empresa', v)} placeholder="Buscar empresa..." /></TableHead>
             <TableHead className="py-1 px-2" />
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.status} onChange={(v) => setFilter('status', v)} placeholder="Status..." /></TableHead>
+            <TableHead className="py-1 px-2">
+              <ColumnFilterInput 
+                type="select" 
+                value={filters.status} 
+                onChange={(v) => setFilter('status', v)} 
+                placeholder="Todos"
+                options={[
+                  { value: 'enviado', label: 'ENVIADO' },
+                  { value: 'nao_enviado', label: 'NÃO ENVIADO' },
+                ]}
+              />
+            </TableHead>
             <TableHead className="py-1 px-2" />
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.data} onChange={(v) => setFilter('data', v)} placeholder="Data..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.data} onChange={(v) => setFilter('data', v)} placeholder="Buscar data..." /></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -160,9 +171,8 @@ const EcdEcfTable: React.FC<EcdEcfTableProps> = ({ empresas, tipo, onEmpresaClic
             const data = getEmpresaData(empresa);
             const status = tipo === 'ecd' ? data.statusEcd : data.statusEcf;
             const dateVal = tipo === 'ecd' ? data.dataEcd : data.dataEcf;
-            const statusLabel = statusEnvioConfig[status]?.label || '';
             return matchesFilter(data.empresa, 'empresa') &&
-              matchesFilter(statusLabel, 'status') &&
+              matchesSelectFilter(status, 'status') &&
               matchesFilter(dateVal, 'data');
           }).map((empresa) => {
             const empresaData = getEmpresaData(empresa);

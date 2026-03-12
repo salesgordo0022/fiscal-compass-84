@@ -1,33 +1,70 @@
 import React, { useState } from 'react';
-import { Filter, X } from 'lucide-react';
+import { Search, X, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-interface ColumnFilterInputProps {
+interface ColumnFilterTextProps {
+  type?: 'text';
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
 }
 
-export const ColumnFilterInput: React.FC<ColumnFilterInputProps> = ({ 
-  value, 
-  onChange, 
-  placeholder = 'Filtrar...', 
-  className 
-}) => {
+interface ColumnFilterSelectProps {
+  type: 'select';
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+  className?: string;
+}
+
+type ColumnFilterInputProps = ColumnFilterTextProps | ColumnFilterSelectProps;
+
+export const ColumnFilterInput: React.FC<ColumnFilterInputProps> = (props) => {
+  if (props.type === 'select') {
+    return (
+      <div className={cn("relative", props.className)}>
+        <Select
+          value={props.value || '__all__'}
+          onValueChange={(v) => props.onChange(v === '__all__' ? '' : v)}
+        >
+          <SelectTrigger className="h-7 text-xs border-border/50 bg-background/50 focus:ring-1 focus:ring-primary/30 [&>span]:truncate">
+            <SelectValue placeholder={props.placeholder || 'Todos'} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__" className="text-xs">Todos</SelectItem>
+            {props.options.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("relative", className)}>
-      <Filter className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+    <div className={cn("relative", props.className)}>
+      <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
       <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="h-6 text-xs pl-6 pr-6 py-0 bg-background/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/30"
+        value={props.value}
+        onChange={(e) => props.onChange(e.target.value)}
+        placeholder={props.placeholder || 'Buscar...'}
+        className="h-7 text-xs pl-6 pr-6 py-0 bg-background/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/30"
       />
-      {value && (
+      {props.value && (
         <button
-          onClick={() => onChange('')}
+          onClick={() => props.onChange('')}
           className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
           <X className="h-3 w-3" />
@@ -59,5 +96,12 @@ export function useColumnFilters<T extends string>(columns: T[]) {
     return (value || '').toLowerCase().includes(filterValue.toLowerCase());
   };
 
-  return { filters, setFilter, hasActiveFilters, clearFilters, matchesFilter };
+  // Exact match for select filters
+  const matchesSelectFilter = (value: string | undefined | null, column: T): boolean => {
+    const filterValue = filters[column];
+    if (!filterValue) return true;
+    return (value || '') === filterValue;
+  };
+
+  return { filters, setFilter, hasActiveFilters, clearFilters, matchesFilter, matchesSelectFilter };
 }
