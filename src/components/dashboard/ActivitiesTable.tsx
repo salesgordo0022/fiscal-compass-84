@@ -43,15 +43,15 @@ const PriorityBadge: React.FC<{ priority: Priority }> = ({ priority }) => {
 };
 
 const ActivitiesTable: React.FC = () => {
-  const { filters, setFilter, matchesFilter } = useColumnFilters(['activity', 'responsible', 'status', 'department', 'deadline', 'priority', 'client'] as const);
+  const { filters, setFilter, matchesFilter, matchesSelectFilter } = useColumnFilters(['activity', 'responsible', 'status', 'department', 'deadline', 'priority', 'client'] as const);
 
   const filteredActivities = mockActivities.filter((activity) =>
     matchesFilter(activity.activity, 'activity') &&
     matchesFilter(activity.responsible, 'responsible') &&
-    matchesFilter(getStatusLabel(activity.status), 'status') &&
-    matchesFilter(activity.department, 'department') &&
+    matchesSelectFilter(activity.status, 'status') &&
+    matchesSelectFilter(activity.department, 'department') &&
     matchesFilter(new Date(activity.deadline).toLocaleDateString('pt-BR'), 'deadline') &&
-    matchesFilter(getPriorityLabel(activity.priority), 'priority') &&
+    matchesSelectFilter(activity.priority, 'priority') &&
     matchesFilter(activity.client, 'client')
   );
 
