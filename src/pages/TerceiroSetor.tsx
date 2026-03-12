@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import TopBar from '@/components/layout/TopBar';
 import PageDescription from '@/components/layout/PageDescription';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -95,6 +96,8 @@ const ProgressBar: React.FC<{ atividades: AtividadeTerceiroSetor[] }> = ({ ativi
 const TerceiroSetor: React.FC = () => {
   const [entidades, setEntidades] = useState<EntidadeTerceiroSetor[]>(entidadesTerceiroSetor);
   const [entidadesSaiuState, setEntidadesSaiuState] = useState<EntidadeTerceiroSetor[]>(entidadesSaiu);
+  const entidadesFilters = useColumnFilters(['codigo', 'empresa', 'status', 'dataRotina'] as const);
+  const saiuFilters = useColumnFilters(['codigo', 'empresa', 'status', 'dataRotina'] as const);
   const [selectedEntidade, setSelectedEntidade] = useState<EntidadeTerceiroSetor | null>(null);
   const [selectedTabType, setSelectedTabType] = useState<'entidades' | 'saiu'>('entidades');
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -237,7 +240,19 @@ const TerceiroSetor: React.FC = () => {
     }
   };
 
-  const filteredEntidades = getFilteredEntidades();
+  const filteredEntidades = getFilteredEntidades().filter((e) =>
+    entidadesFilters.matchesFilter(e.codigo, 'codigo') &&
+    entidadesFilters.matchesFilter(e.empresa, 'empresa') &&
+    entidadesFilters.matchesFilter(e.status, 'status') &&
+    entidadesFilters.matchesFilter(e.dataRotina, 'dataRotina')
+  );
+
+  const filteredSaiu = entidadesSaiuState.filter((e) =>
+    saiuFilters.matchesFilter(e.codigo, 'codigo') &&
+    saiuFilters.matchesFilter(e.empresa, 'empresa') &&
+    saiuFilters.matchesFilter(e.status, 'status') &&
+    saiuFilters.matchesFilter(e.dataRotina, 'dataRotina')
+  );
 
   const handleOpenSheet = (entidade: EntidadeTerceiroSetor, tabType: 'entidades' | 'saiu') => {
     setSelectedEntidade(entidade);
@@ -452,6 +467,15 @@ const TerceiroSetor: React.FC = () => {
                     <TableHead className="text-xs font-medium text-muted-foreground w-[80px] text-center">Detalhes</TableHead>
                     <TableHead className="text-xs font-medium text-muted-foreground w-[120px] text-center">Rotinas</TableHead>
                   </TableRow>
+                  <TableRow className="bg-muted/10 hover:bg-muted/10">
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={entidadesFilters.filters.codigo} onChange={(v) => entidadesFilters.setFilter('codigo', v)} placeholder="Cod..." /></TableHead>
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={entidadesFilters.filters.empresa} onChange={(v) => entidadesFilters.setFilter('empresa', v)} placeholder="Empresa..." /></TableHead>
+                    <TableHead className="py-1 px-2" />
+                    <TableHead className="py-1 px-2" />
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={entidadesFilters.filters.status} onChange={(v) => entidadesFilters.setFilter('status', v)} placeholder="Status..." /></TableHead>
+                    <TableHead className="py-1 px-2" />
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={entidadesFilters.filters.dataRotina} onChange={(v) => entidadesFilters.setFilter('dataRotina', v)} placeholder="Data..." /></TableHead>
+                  </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredEntidades.map((entidade) => (
@@ -579,9 +603,18 @@ const TerceiroSetor: React.FC = () => {
                     <TableHead className="text-xs font-medium text-muted-foreground w-[80px] text-center">Detalhes</TableHead>
                     <TableHead className="text-xs font-medium text-muted-foreground w-[120px] text-center">Rotinas</TableHead>
                   </TableRow>
+                  <TableRow className="bg-muted/10 hover:bg-muted/10">
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={saiuFilters.filters.codigo} onChange={(v) => saiuFilters.setFilter('codigo', v)} placeholder="Cod..." /></TableHead>
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={saiuFilters.filters.empresa} onChange={(v) => saiuFilters.setFilter('empresa', v)} placeholder="Empresa..." /></TableHead>
+                    <TableHead className="py-1 px-2" />
+                    <TableHead className="py-1 px-2" />
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={saiuFilters.filters.status} onChange={(v) => saiuFilters.setFilter('status', v)} placeholder="Status..." /></TableHead>
+                    <TableHead className="py-1 px-2" />
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={saiuFilters.filters.dataRotina} onChange={(v) => saiuFilters.setFilter('dataRotina', v)} placeholder="Data..." /></TableHead>
+                  </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {entidadesSaiuState.map((entidade) => (
+                  {filteredSaiu.map((entidade) => (
                     <TableRow key={entidade.id} className="hover:bg-muted/50">
                       <TableCell className="py-2 text-sm font-medium">
                         {entidade.codigo || '-'}

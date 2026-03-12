@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, MessageSquare, Eye, Copy, Check, UserMinus } from 'lucide-react';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
@@ -148,6 +149,8 @@ interface PessoasFisicasTableProps {
 }
 
 const PessoasFisicasTable: React.FC<PessoasFisicasTableProps> = ({ pessoas, onPessoaClick, savedDataMap, onRemove }) => {
+  const { filters, setFilter, matchesFilter } = useColumnFilters(['pessoaFisica', 'dataFechamento'] as const);
+  
   const getPessoaData = (pessoa: PessoaFisicaCarneLeao) => {
     const saved = savedDataMap[pessoa.id];
     if (saved) {
@@ -191,9 +194,20 @@ const PessoasFisicasTable: React.FC<PessoasFisicasTableProps> = ({ pessoas, onPe
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[120px] text-center">Data do fechamento</TableHead>
             {onRemove && <TableHead className="text-xs font-medium text-muted-foreground min-w-[60px] text-center">Ações</TableHead>}
           </TableRow>
+          <TableRow className="border-b border-border bg-muted/20">
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.pessoaFisica} onChange={(v) => setFilter('pessoaFisica', v)} placeholder="Nome..." /></TableHead>
+            <TableHead className="py-1 px-2" />
+            <TableHead className="py-1 px-2" />
+            <TableHead className="py-1 px-2" />
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataFechamento} onChange={(v) => setFilter('dataFechamento', v)} placeholder="Data..." /></TableHead>
+            {onRemove && <TableHead className="py-1 px-2" />}
+          </TableRow>
         </TableHeader>
         <TableBody>
-          {pessoas.map((pessoa) => {
+          {pessoas.filter((pessoa) => 
+            matchesFilter(pessoa.pessoaFisica, 'pessoaFisica') &&
+            matchesFilter(pessoa.dataFechamento, 'dataFechamento')
+          ).map((pessoa) => {
             const pessoaData = getPessoaData(pessoa);
             const savedProgress = calculateSavedProgress(pessoa);
             const progressColorClass = savedProgress >= 80 ? 'bg-green-500' : savedProgress >= 40 ? 'bg-yellow-500' : 'bg-red-500';

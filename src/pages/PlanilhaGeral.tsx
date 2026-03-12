@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, ChevronDown, Check, MessageSquare, Eye, Pencil, UserMinus, Upload } from 'lucide-react';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -744,6 +745,18 @@ interface EmpresasTableProps {
 }
 
 const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick, savedDataMap, onRemove }) => {
+  const { filters, setFilter, matchesFilter } = useColumnFilters(['cod', 'cnpj', 'empresa', 'dataFechamento'] as const);
+
+  const filteredEmpresas = empresas.filter((empresa) => {
+    const data = savedDataMap[empresa.id];
+    return (
+      matchesFilter(data?.codigo || empresa.cod, 'cod') &&
+      matchesFilter(data?.cnpj || empresa.cnpj, 'cnpj') &&
+      matchesFilter(empresa.empresa, 'empresa') &&
+      matchesFilter(empresa.dataFechamento, 'dataFechamento')
+    );
+  });
+
   // Helper para obter dados salvos ou originais
   const getEmpresaData = (empresa: EmpresaPlanilha) => {
     const saved = savedDataMap[empresa.id];
@@ -801,9 +814,19 @@ const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick,
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[120px] text-center">Data do fechamento</TableHead>
             {onRemove && <TableHead className="text-xs font-medium text-muted-foreground min-w-[60px] text-center">Ações</TableHead>}
           </TableRow>
+          <TableRow className="border-b border-border bg-muted/20">
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.cod} onChange={(v) => setFilter('cod', v)} placeholder="Cod..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.cnpj} onChange={(v) => setFilter('cnpj', v)} placeholder="CNPJ..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.empresa} onChange={(v) => setFilter('empresa', v)} placeholder="Empresa..." /></TableHead>
+            <TableHead className="py-1 px-2" />
+            <TableHead className="py-1 px-2" />
+            <TableHead className="py-1 px-2" />
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataFechamento} onChange={(v) => setFilter('dataFechamento', v)} placeholder="Data..." /></TableHead>
+            {onRemove && <TableHead className="py-1 px-2" />}
+          </TableRow>
         </TableHeader>
         <TableBody>
-          {empresas.map((empresa) => {
+          {filteredEmpresas.map((empresa) => {
             const empresaData = getEmpresaData(empresa);
             const savedProgress = calculateSavedProgress(empresa);
             const progressColorClass = savedProgress >= 80 ? 'bg-green-500' : savedProgress >= 40 ? 'bg-yellow-500' : 'bg-red-500';

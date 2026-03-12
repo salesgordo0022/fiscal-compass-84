@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, MessageSquare, Eye, Calendar as CalendarIcon, Kanban, Bell, BellRing, UserMinus } from 'lucide-react';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
@@ -167,6 +168,8 @@ interface TarefasTableProps {
 }
 
 const TarefasTable: React.FC<TarefasTableProps> = ({ tarefas, onTarefaClick, savedDataMap, onStatusChange }) => {
+  const { filters, setFilter, matchesFilter } = useColumnFilters(['empresa', 'cnpj', 'status', 'enquadramento', 'dataCriacao'] as const);
+
   const getTarefaData = (tarefa: TarefaHolding) => {
     const saved = savedDataMap[tarefa.id];
     if (saved) {
@@ -218,9 +221,24 @@ const TarefasTable: React.FC<TarefasTableProps> = ({ tarefas, onTarefaClick, sav
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[80px] text-center">Anotações</TableHead>
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[120px] text-center">Data de Criação</TableHead>
           </TableRow>
+          <TableRow className="border-b border-border bg-muted/20">
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.empresa} onChange={(v) => setFilter('empresa', v)} placeholder="Empresa..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.cnpj} onChange={(v) => setFilter('cnpj', v)} placeholder="CNPJ..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.status} onChange={(v) => setFilter('status', v)} placeholder="Status..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.enquadramento} onChange={(v) => setFilter('enquadramento', v)} placeholder="Enquad..." /></TableHead>
+            <TableHead className="py-1 px-2" />
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataCriacao} onChange={(v) => setFilter('dataCriacao', v)} placeholder="Data..." /></TableHead>
+          </TableRow>
         </TableHeader>
         <TableBody>
-          {tarefas.map((tarefa) => {
+          {tarefas.filter((tarefa) => {
+            const data = getTarefaData(tarefa);
+            return matchesFilter(data.empresa, 'empresa') &&
+              matchesFilter(data.cnpj, 'cnpj') &&
+              matchesFilter(statusColors[data.status]?.label, 'status') &&
+              matchesFilter(data.enquadramento, 'enquadramento') &&
+              matchesFilter(data.dataCriacao, 'dataCriacao');
+          }).map((tarefa) => {
             const tarefaData = getTarefaData(tarefa);
             const savedProgress = calculateSavedProgress(tarefa);
             const progressColorClass = savedProgress >= 80 ? 'bg-green-500' : savedProgress >= 40 ? 'bg-yellow-500' : 'bg-red-500';

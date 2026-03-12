@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import { CheckCircle2, XCircle, FileText, Calculator, MessageSquare, Eye, Plus, Trash2 } from 'lucide-react';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
@@ -128,6 +129,8 @@ interface EcdEcfTableProps {
 }
 
 const EcdEcfTable: React.FC<EcdEcfTableProps> = ({ empresas, tipo, onEmpresaClick, savedDataMap, onToggleStatus }) => {
+  const { filters, setFilter, matchesFilter } = useColumnFilters(['empresa', 'status', 'data'] as const);
+  
   const getEmpresaData = (empresa: EmpresaEcdEcf) => {
     const saved = savedDataMap[empresa.id];
     return saved ? { ...empresa, ...saved } : empresa;
@@ -144,9 +147,24 @@ const EcdEcfTable: React.FC<EcdEcfTableProps> = ({ empresas, tipo, onEmpresaClic
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[80px] text-center">Situação</TableHead>
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[120px] text-center">Data</TableHead>
           </TableRow>
+          <TableRow className="border-b border-border bg-muted/20">
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.empresa} onChange={(v) => setFilter('empresa', v)} placeholder="Empresa..." /></TableHead>
+            <TableHead className="py-1 px-2" />
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.status} onChange={(v) => setFilter('status', v)} placeholder="Status..." /></TableHead>
+            <TableHead className="py-1 px-2" />
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.data} onChange={(v) => setFilter('data', v)} placeholder="Data..." /></TableHead>
+          </TableRow>
         </TableHeader>
         <TableBody>
-          {empresas.map((empresa) => {
+          {empresas.filter((empresa) => {
+            const data = getEmpresaData(empresa);
+            const status = tipo === 'ecd' ? data.statusEcd : data.statusEcf;
+            const dateVal = tipo === 'ecd' ? data.dataEcd : data.dataEcf;
+            const statusLabel = statusEnvioConfig[status]?.label || '';
+            return matchesFilter(data.empresa, 'empresa') &&
+              matchesFilter(statusLabel, 'status') &&
+              matchesFilter(dateVal, 'data');
+          }).map((empresa) => {
             const empresaData = getEmpresaData(empresa);
             const status = tipo === 'ecd' ? empresaData.statusEcd : empresaData.statusEcf;
             const data = tipo === 'ecd' ? empresaData.dataEcd : empresaData.dataEcf;

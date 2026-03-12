@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 
 const StatusBadge: React.FC<{ status: ActivityStatus }> = ({ status }) => {
   const statusClasses: Record<ActivityStatus, string> = {
@@ -42,6 +43,18 @@ const PriorityBadge: React.FC<{ priority: Priority }> = ({ priority }) => {
 };
 
 const ActivitiesTable: React.FC = () => {
+  const { filters, setFilter, matchesFilter } = useColumnFilters(['activity', 'responsible', 'status', 'department', 'deadline', 'priority', 'client'] as const);
+
+  const filteredActivities = mockActivities.filter((activity) =>
+    matchesFilter(activity.activity, 'activity') &&
+    matchesFilter(activity.responsible, 'responsible') &&
+    matchesFilter(getStatusLabel(activity.status), 'status') &&
+    matchesFilter(activity.department, 'department') &&
+    matchesFilter(new Date(activity.deadline).toLocaleDateString('pt-BR'), 'deadline') &&
+    matchesFilter(getPriorityLabel(activity.priority), 'priority') &&
+    matchesFilter(activity.client, 'client')
+  );
+
   return (
     <div className="data-card overflow-hidden p-0">
       <div className="p-6 border-b border-border">
@@ -61,9 +74,19 @@ const ActivitiesTable: React.FC = () => {
               <TableHead className="font-semibold">Prioridade</TableHead>
               <TableHead className="font-semibold">Cliente</TableHead>
             </TableRow>
+            <TableRow className="bg-muted/20">
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.activity} onChange={(v) => setFilter('activity', v)} placeholder="Atividade..." /></TableHead>
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.responsible} onChange={(v) => setFilter('responsible', v)} placeholder="Responsável..." /></TableHead>
+              <TableHead className="py-1 px-2" />
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.status} onChange={(v) => setFilter('status', v)} placeholder="Status..." /></TableHead>
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.department} onChange={(v) => setFilter('department', v)} placeholder="Depto..." /></TableHead>
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.deadline} onChange={(v) => setFilter('deadline', v)} placeholder="Prazo..." /></TableHead>
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.priority} onChange={(v) => setFilter('priority', v)} placeholder="Prioridade..." /></TableHead>
+              <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.client} onChange={(v) => setFilter('client', v)} placeholder="Cliente..." /></TableHead>
+            </TableRow>
           </TableHeader>
           <TableBody>
-            {mockActivities.map((activity) => (
+            {filteredActivities.map((activity) => (
               <TableRow key={activity.id} className="hover:bg-muted/30">
                 <TableCell className="font-medium max-w-[250px]">
                   <span className="truncate block" title={activity.activity}>
