@@ -744,6 +744,18 @@ interface EmpresasTableProps {
 }
 
 const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick, savedDataMap, onRemove }) => {
+  const { filters, setFilter, matchesFilter } = useColumnFilters(['cod', 'cnpj', 'empresa', 'dataFechamento'] as const);
+
+  const filteredEmpresas = empresas.filter((empresa) => {
+    const data = savedDataMap[empresa.id];
+    return (
+      matchesFilter(data?.codigo || empresa.cod, 'cod') &&
+      matchesFilter(data?.cnpj || empresa.cnpj, 'cnpj') &&
+      matchesFilter(empresa.empresa, 'empresa') &&
+      matchesFilter(empresa.dataFechamento, 'dataFechamento')
+    );
+  });
+
   // Helper para obter dados salvos ou originais
   const getEmpresaData = (empresa: EmpresaPlanilha) => {
     const saved = savedDataMap[empresa.id];
