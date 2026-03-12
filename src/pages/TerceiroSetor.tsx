@@ -240,7 +240,19 @@ const TerceiroSetor: React.FC = () => {
     }
   };
 
-  const filteredEntidades = getFilteredEntidades();
+  const filteredEntidades = getFilteredEntidades().filter((e) =>
+    entidadesFilters.matchesFilter(e.codigo, 'codigo') &&
+    entidadesFilters.matchesFilter(e.empresa, 'empresa') &&
+    entidadesFilters.matchesFilter(e.status, 'status') &&
+    entidadesFilters.matchesFilter(e.dataRotina, 'dataRotina')
+  );
+
+  const filteredSaiu = entidadesSaiuState.filter((e) =>
+    saiuFilters.matchesFilter(e.codigo, 'codigo') &&
+    saiuFilters.matchesFilter(e.empresa, 'empresa') &&
+    saiuFilters.matchesFilter(e.status, 'status') &&
+    saiuFilters.matchesFilter(e.dataRotina, 'dataRotina')
+  );
 
   const handleOpenSheet = (entidade: EntidadeTerceiroSetor, tabType: 'entidades' | 'saiu') => {
     setSelectedEntidade(entidade);
