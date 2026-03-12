@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import TopBar from '@/components/layout/TopBar';
 import PageDescription from '@/components/layout/PageDescription';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
