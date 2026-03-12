@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import { CheckCircle2, XCircle, FileText, Calculator, MessageSquare, Eye, Plus, Trash2 } from 'lucide-react';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
