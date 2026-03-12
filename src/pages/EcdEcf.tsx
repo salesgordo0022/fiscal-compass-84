@@ -129,7 +129,7 @@ interface EcdEcfTableProps {
 }
 
 const EcdEcfTable: React.FC<EcdEcfTableProps> = ({ empresas, tipo, onEmpresaClick, savedDataMap, onToggleStatus }) => {
-  const { filters, setFilter, matchesFilter } = useColumnFilters(['empresa', 'status', 'data'] as const);
+  const { filters, setFilter, matchesFilter, matchesSelectFilter } = useColumnFilters(['empresa', 'status', 'data'] as const);
   
   const getEmpresaData = (empresa: EmpresaEcdEcf) => {
     const saved = savedDataMap[empresa.id];
