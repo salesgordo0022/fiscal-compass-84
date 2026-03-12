@@ -195,11 +195,11 @@ const PessoasFisicasTable: React.FC<PessoasFisicasTableProps> = ({ pessoas, onPe
             {onRemove && <TableHead className="text-xs font-medium text-muted-foreground min-w-[60px] text-center">Ações</TableHead>}
           </TableRow>
           <TableRow className="border-b border-border bg-muted/20">
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.pessoaFisica} onChange={(v) => setFilter('pessoaFisica', v)} placeholder="Nome..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.pessoaFisica} onChange={(v) => setFilter('pessoaFisica', v)} placeholder="Buscar nome..." /></TableHead>
             <TableHead className="py-1 px-2" />
             <TableHead className="py-1 px-2" />
             <TableHead className="py-1 px-2" />
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataFechamento} onChange={(v) => setFilter('dataFechamento', v)} placeholder="Data..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataFechamento} onChange={(v) => setFilter('dataFechamento', v)} placeholder="Buscar data..." /></TableHead>
             {onRemove && <TableHead className="py-1 px-2" />}
           </TableRow>
         </TableHeader>

@@ -815,13 +815,13 @@ const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick,
             {onRemove && <TableHead className="text-xs font-medium text-muted-foreground min-w-[60px] text-center">Ações</TableHead>}
           </TableRow>
           <TableRow className="border-b border-border bg-muted/20">
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.cod} onChange={(v) => setFilter('cod', v)} placeholder="Cod..." /></TableHead>
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.cnpj} onChange={(v) => setFilter('cnpj', v)} placeholder="CNPJ..." /></TableHead>
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.empresa} onChange={(v) => setFilter('empresa', v)} placeholder="Empresa..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.cod} onChange={(v) => setFilter('cod', v)} placeholder="Buscar cod..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.cnpj} onChange={(v) => setFilter('cnpj', v)} placeholder="Buscar CNPJ..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.empresa} onChange={(v) => setFilter('empresa', v)} placeholder="Buscar empresa..." /></TableHead>
             <TableHead className="py-1 px-2" />
             <TableHead className="py-1 px-2" />
             <TableHead className="py-1 px-2" />
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataFechamento} onChange={(v) => setFilter('dataFechamento', v)} placeholder="Data..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataFechamento} onChange={(v) => setFilter('dataFechamento', v)} placeholder="Buscar data..." /></TableHead>
             {onRemove && <TableHead className="py-1 px-2" />}
           </TableRow>
         </TableHeader>

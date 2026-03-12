@@ -222,12 +222,28 @@ const TarefasTable: React.FC<TarefasTableProps> = ({ tarefas, onTarefaClick, sav
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[120px] text-center">Data de Criação</TableHead>
           </TableRow>
           <TableRow className="border-b border-border bg-muted/20">
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.empresa} onChange={(v) => setFilter('empresa', v)} placeholder="Empresa..." /></TableHead>
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.cnpj} onChange={(v) => setFilter('cnpj', v)} placeholder="CNPJ..." /></TableHead>
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.status} onChange={(v) => setFilter('status', v)} placeholder="Status..." /></TableHead>
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.enquadramento} onChange={(v) => setFilter('enquadramento', v)} placeholder="Enquad..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.empresa} onChange={(v) => setFilter('empresa', v)} placeholder="Buscar empresa..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.cnpj} onChange={(v) => setFilter('cnpj', v)} placeholder="Buscar CNPJ..." /></TableHead>
+            <TableHead className="py-1 px-2">
+              <ColumnFilterInput 
+                type="select" 
+                value={filters.status} 
+                onChange={(v) => setFilter('status', v)} 
+                placeholder="Todos"
+                options={Object.entries(statusColors).map(([key, config]) => ({ value: key, label: config.label }))}
+              />
+            </TableHead>
+            <TableHead className="py-1 px-2">
+              <ColumnFilterInput 
+                type="select" 
+                value={filters.enquadramento} 
+                onChange={(v) => setFilter('enquadramento', v)} 
+                placeholder="Todos"
+                options={enquadramentoOptions.map(o => ({ value: o.value, label: o.label }))}
+              />
+            </TableHead>
             <TableHead className="py-1 px-2" />
-            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataCriacao} onChange={(v) => setFilter('dataCriacao', v)} placeholder="Data..." /></TableHead>
+            <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataCriacao} onChange={(v) => setFilter('dataCriacao', v)} placeholder="Buscar data..." /></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -235,8 +251,8 @@ const TarefasTable: React.FC<TarefasTableProps> = ({ tarefas, onTarefaClick, sav
             const data = getTarefaData(tarefa);
             return matchesFilter(data.empresa, 'empresa') &&
               matchesFilter(data.cnpj, 'cnpj') &&
-              matchesFilter(statusColors[data.status]?.label, 'status') &&
-              matchesFilter(data.enquadramento, 'enquadramento') &&
+              matchesSelectFilter(data.status, 'status') &&
+              matchesSelectFilter(data.enquadramento, 'enquadramento') &&
               matchesFilter(data.dataCriacao, 'dataCriacao');
           }).map((tarefa) => {
             const tarefaData = getTarefaData(tarefa);
