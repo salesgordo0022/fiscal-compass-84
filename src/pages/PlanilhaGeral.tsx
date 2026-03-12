@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, ChevronDown, Check, MessageSquare, Eye, Pencil, UserMinus, Upload } from 'lucide-react';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
