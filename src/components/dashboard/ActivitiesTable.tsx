@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
+import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 
 const StatusBadge: React.FC<{ status: ActivityStatus }> = ({ status }) => {
   const statusClasses: Record<ActivityStatus, string> = {
