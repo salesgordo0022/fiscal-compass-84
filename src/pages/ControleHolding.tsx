@@ -168,7 +168,7 @@ interface TarefasTableProps {
 }
 
 const TarefasTable: React.FC<TarefasTableProps> = ({ tarefas, onTarefaClick, savedDataMap, onStatusChange }) => {
-  const { filters, setFilter, matchesFilter } = useColumnFilters(['empresa', 'cnpj', 'status', 'enquadramento', 'dataCriacao'] as const);
+  const { filters, setFilter, matchesFilter, matchesSelectFilter } = useColumnFilters(['empresa', 'cnpj', 'status', 'enquadramento', 'dataCriacao'] as const);
 
   const getTarefaData = (tarefa: TarefaHolding) => {
     const saved = savedDataMap[tarefa.id];
