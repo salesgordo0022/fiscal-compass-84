@@ -467,6 +467,15 @@ const TerceiroSetor: React.FC = () => {
                     <TableHead className="text-xs font-medium text-muted-foreground w-[80px] text-center">Detalhes</TableHead>
                     <TableHead className="text-xs font-medium text-muted-foreground w-[120px] text-center">Rotinas</TableHead>
                   </TableRow>
+                  <TableRow className="bg-muted/10 hover:bg-muted/10">
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={entidadesFilters.filters.codigo} onChange={(v) => entidadesFilters.setFilter('codigo', v)} placeholder="Cod..." /></TableHead>
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={entidadesFilters.filters.empresa} onChange={(v) => entidadesFilters.setFilter('empresa', v)} placeholder="Empresa..." /></TableHead>
+                    <TableHead className="py-1 px-2" />
+                    <TableHead className="py-1 px-2" />
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={entidadesFilters.filters.status} onChange={(v) => entidadesFilters.setFilter('status', v)} placeholder="Status..." /></TableHead>
+                    <TableHead className="py-1 px-2" />
+                    <TableHead className="py-1 px-2"><ColumnFilterInput value={entidadesFilters.filters.dataRotina} onChange={(v) => entidadesFilters.setFilter('dataRotina', v)} placeholder="Data..." /></TableHead>
+                  </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredEntidades.map((entidade) => (
