@@ -96,6 +96,8 @@ const ProgressBar: React.FC<{ atividades: AtividadeTerceiroSetor[] }> = ({ ativi
 const TerceiroSetor: React.FC = () => {
   const [entidades, setEntidades] = useState<EntidadeTerceiroSetor[]>(entidadesTerceiroSetor);
   const [entidadesSaiuState, setEntidadesSaiuState] = useState<EntidadeTerceiroSetor[]>(entidadesSaiu);
+  const entidadesFilters = useColumnFilters(['codigo', 'empresa', 'status', 'dataRotina'] as const);
+  const saiuFilters = useColumnFilters(['codigo', 'empresa', 'status', 'dataRotina'] as const);
   const [selectedEntidade, setSelectedEntidade] = useState<EntidadeTerceiroSetor | null>(null);
   const [selectedTabType, setSelectedTabType] = useState<'entidades' | 'saiu'>('entidades');
   const [isSheetOpen, setIsSheetOpen] = useState(false);
