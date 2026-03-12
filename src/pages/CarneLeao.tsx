@@ -149,6 +149,8 @@ interface PessoasFisicasTableProps {
 }
 
 const PessoasFisicasTable: React.FC<PessoasFisicasTableProps> = ({ pessoas, onPessoaClick, savedDataMap, onRemove }) => {
+  const { filters, setFilter, matchesFilter } = useColumnFilters(['pessoaFisica', 'dataFechamento'] as const);
+  
   const getPessoaData = (pessoa: PessoaFisicaCarneLeao) => {
     const saved = savedDataMap[pessoa.id];
     if (saved) {
