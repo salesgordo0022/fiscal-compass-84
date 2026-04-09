@@ -79,6 +79,7 @@ const regimeTributarioOptions = [
   { value: '', label: '-' },
   { value: 'Lucro presumido', label: 'Lucro Presumido' },
   { value: 'Lucro real', label: 'Lucro Real' },
+  { value: 'Simples nacional', label: 'Simples Nacional' },
 ];
 
 const situacaoOptions = [
@@ -972,6 +973,7 @@ const PlanilhaGeral: React.FC = () => {
   const [empresasLucroRealList, setEmpresasLucroRealList] = useState<EmpresaPlanilha[]>(empresasLucroReal);
   const [empresasLucroPresumidoList, setEmpresasLucroPresumidoList] = useState<EmpresaPlanilha[]>(empresasLucroPresumido);
   const [empresasSemMovimentoList, setEmpresasSemMovimentoList] = useState<EmpresaPlanilha[]>(empresasSemMovimento);
+  const [empresasSimplesNacionalList, setEmpresasSimplesNacionalList] = useState<EmpresaPlanilha[]>([]);
 
   // Carregar dados do banco de dados na inicialização
   useEffect(() => {
@@ -997,6 +999,7 @@ const PlanilhaGeral: React.FC = () => {
           const lucroReal: EmpresaPlanilha[] = [];
           const lucroPresumido: EmpresaPlanilha[] = [];
           const semMovimento: EmpresaPlanilha[] = [];
+          const simplesNacional: EmpresaPlanilha[] = [];
 
           dbEmpresas.forEach((emp: any) => {
             const empresa: EmpresaPlanilha = {
@@ -1024,12 +1027,14 @@ const PlanilhaGeral: React.FC = () => {
 
             if (emp.tab === 'lucro-presumido') lucroPresumido.push(empresa);
             else if (emp.tab === 'sem-movimento') semMovimento.push(empresa);
+            else if (emp.tab === 'simples-nacional') simplesNacional.push(empresa);
             else lucroReal.push(empresa);
           });
 
           setEmpresasLucroRealList(lucroReal);
           setEmpresasLucroPresumidoList(lucroPresumido);
           setEmpresasSemMovimentoList(semMovimento);
+          setEmpresasSimplesNacionalList(simplesNacional);
         } else {
           // Banco vazio - usar dados mock e salvar no banco (com prefixo nos IDs para evitar colisão)
           const prefixedLucroReal = empresasLucroReal.map(e => ({ ...e, id: `lr-${e.id}`, tab: 'lucro-real' }));
@@ -1302,12 +1307,13 @@ const PlanilhaGeral: React.FC = () => {
         const getListAndSetter = () => {
           if (activeTab === 'lucro-real') return { list: empresasLucroRealList, setter: setEmpresasLucroRealList, regime: 'Lucro real' };
           if (activeTab === 'lucro-presumido') return { list: empresasLucroPresumidoList, setter: setEmpresasLucroPresumidoList, regime: 'Lucro presumido' };
+          if (activeTab === 'simples-nacional') return { list: empresasSimplesNacionalList, setter: setEmpresasSimplesNacionalList, regime: 'Simples nacional' };
           return { list: empresasSemMovimentoList, setter: setEmpresasSemMovimentoList, regime: '' };
         };
 
         const { list: existingList, setter, regime } = getListAndSetter();
         const importedList: EmpresaPlanilha[] = [];
-        const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : 'sem-movimento';
+        const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : activeTab === 'simples-nacional' ? 'simples-nacional' : 'sem-movimento';
 
         // Criar novas empresas a partir da planilha
         jsonData.forEach((row) => {
@@ -1408,6 +1414,8 @@ const PlanilhaGeral: React.FC = () => {
       setEmpresasLucroRealList(prev => [...prev, newEmpresa]);
     } else if (activeTab === 'lucro-presumido') {
       setEmpresasLucroPresumidoList(prev => [...prev, newEmpresa]);
+    } else if (activeTab === 'simples-nacional') {
+      setEmpresasSimplesNacionalList(prev => [...prev, newEmpresa]);
     } else {
       setEmpresasSemMovimentoList(prev => [...prev, newEmpresa]);
     }
@@ -1421,6 +1429,8 @@ const PlanilhaGeral: React.FC = () => {
       setEmpresasLucroRealList(prev => prev.filter(e => e.id !== empresaId));
     } else if (activeTab === 'lucro-presumido') {
       setEmpresasLucroPresumidoList(prev => prev.filter(e => e.id !== empresaId));
+    } else if (activeTab === 'simples-nacional') {
+      setEmpresasSimplesNacionalList(prev => prev.filter(e => e.id !== empresaId));
     } else {
       setEmpresasSemMovimentoList(prev => prev.filter(e => e.id !== empresaId));
     }
@@ -1439,6 +1449,7 @@ const PlanilhaGeral: React.FC = () => {
   const getActiveEmpresas = () => {
     if (activeTab === 'lucro-real') return empresasLucroRealList;
     if (activeTab === 'lucro-presumido') return empresasLucroPresumidoList;
+    if (activeTab === 'simples-nacional') return empresasSimplesNacionalList;
     return empresasSemMovimentoList;
   };
 
@@ -1549,7 +1560,7 @@ const PlanilhaGeral: React.FC = () => {
     const isComMovimento = situacaoLower.includes('com movimento');
 
     // Determinar aba de destino baseado na situação e regime
-    let targetTab: 'lucro-real' | 'lucro-presumido' | 'sem-movimento' | null = null;
+    let targetTab: 'lucro-real' | 'lucro-presumido' | 'simples-nacional' | 'sem-movimento' | null = null;
     
     if (isSaiu || isSemMovimento) {
       targetTab = 'sem-movimento';
@@ -1559,6 +1570,8 @@ const PlanilhaGeral: React.FC = () => {
         targetTab = 'lucro-real';
       } else if (regimeLower.includes('presumido')) {
         targetTab = 'lucro-presumido';
+      } else if (regimeLower.includes('simples')) {
+        targetTab = 'simples-nacional';
       }
     }
 
@@ -1576,6 +1589,8 @@ const PlanilhaGeral: React.FC = () => {
         setEmpresasLucroRealList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
       } else if (activeTab === 'lucro-presumido') {
         setEmpresasLucroPresumidoList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
+      } else if (activeTab === 'simples-nacional') {
+        setEmpresasSimplesNacionalList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
       } else {
         setEmpresasSemMovimentoList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
       }
@@ -1585,6 +1600,8 @@ const PlanilhaGeral: React.FC = () => {
         setEmpresasLucroRealList(prev => [updatedEmpresa, ...prev]);
       } else if (targetTab === 'lucro-presumido') {
         setEmpresasLucroPresumidoList(prev => [updatedEmpresa, ...prev]);
+      } else if (targetTab === 'simples-nacional') {
+        setEmpresasSimplesNacionalList(prev => [updatedEmpresa, ...prev]);
       } else {
         setEmpresasSemMovimentoList(prev => [updatedEmpresa, ...prev]);
       }
@@ -1592,6 +1609,7 @@ const PlanilhaGeral: React.FC = () => {
       const tabNames: Record<string, string> = {
         'lucro-real': 'Lucro Real',
         'lucro-presumido': 'Lucro Presumido',
+        'simples-nacional': 'Simples Nacional',
         'sem-movimento': 'Sem Movimento'
       };
       
@@ -1799,6 +1817,13 @@ const PlanilhaGeral: React.FC = () => {
                 EMPRESAS LUCRO PRESUMIDO
               </TabsTrigger>
               <TabsTrigger
+                value="simples-nacional"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2 text-sm"
+              >
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                EMPRESAS SIMPLES NACIONAL
+              </TabsTrigger>
+              <TabsTrigger
                 value="sem-movimento"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2 text-sm"
               >
@@ -1836,6 +1861,7 @@ const PlanilhaGeral: React.FC = () => {
                   { name: 'regime', label: 'Regime Tributário', type: 'select', options: [
                     { value: 'Lucro real', label: 'Lucro Real' },
                     { value: 'Lucro presumido', label: 'Lucro Presumido' },
+                    { value: 'Simples nacional', label: 'Simples Nacional' },
                   ] },
                 ]}
                 onAdd={handleAddEmpresa}
@@ -1849,6 +1875,9 @@ const PlanilhaGeral: React.FC = () => {
             </TabsContent>
             <TabsContent value="lucro-presumido" className="m-0">
               <EmpresasTable empresas={empresasLucroPresumidoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
+            </TabsContent>
+            <TabsContent value="simples-nacional" className="m-0">
+              <EmpresasTable empresas={empresasSimplesNacionalList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
             </TabsContent>
             <TabsContent value="sem-movimento" className="m-0">
               <EmpresasTable empresas={empresasSemMovimentoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
