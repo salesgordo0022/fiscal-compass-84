@@ -174,7 +174,8 @@ const TerceiroSetor: React.FC = () => {
 
         console.log('Mapeamento:', { empresaCol, cnpjCol, codCol });
 
-        const newList: EntidadeTerceiroSetor[] = [];
+        const existingList = activeTab === 'entidades' ? entidades : entidadesSaiuState;
+        const importedList: EntidadeTerceiroSetor[] = [];
         jsonData.forEach((row) => {
           const empresaNome = String(row[empresaCol] || '').trim();
           if (!empresaNome) return;
@@ -182,7 +183,14 @@ const TerceiroSetor: React.FC = () => {
           const cnpj = cnpjCol ? String(row[cnpjCol] || '').trim() : '';
           const cod = codCol ? String(row[codCol] || '').trim() : '';
 
-          newList.push({
+          // Verificar duplicatas
+          const alreadyExists = existingList.some(
+            (e) => e.empresa.toLowerCase() === empresaNome.toLowerCase() ||
+            (cnpj && e.cnpj && e.cnpj === cnpj)
+          );
+          if (alreadyExists) return;
+
+          importedList.push({
             id: `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             codigo: cod,
             empresa: empresaNome,
@@ -202,12 +210,14 @@ const TerceiroSetor: React.FC = () => {
         });
 
         if (activeTab === 'entidades') {
-          setEntidades(newList);
+          setEntidades([...existingList, ...importedList]);
         } else {
-          setEntidadesSaiuState(newList);
+          setEntidadesSaiuState([...existingList, ...importedList]);
         }
 
-        toast.success(`${newList.length} entidade(s) importada(s)`);
+        const skipped = jsonData.length - importedList.length;
+        const msg = `${importedList.length} entidade(s) importada(s)` + (skipped > 0 ? ` (${skipped} duplicada(s) ignorada(s))` : '');
+        toast.success(msg);
       } catch (error) {
         console.error('Erro ao importar:', error);
         toast.error('Erro ao importar planilha.');

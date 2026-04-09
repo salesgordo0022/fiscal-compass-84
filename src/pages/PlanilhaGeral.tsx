@@ -1305,26 +1305,11 @@ const PlanilhaGeral: React.FC = () => {
           return { list: empresasSemMovimentoList, setter: setEmpresasSemMovimentoList, regime: '' };
         };
 
-        const { setter, regime } = getListAndSetter();
-        const newList: EmpresaPlanilha[] = [];
+        const { list: existingList, setter, regime } = getListAndSetter();
+        const importedList: EmpresaPlanilha[] = [];
         const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : 'sem-movimento';
 
-        // 1. Apagar todas as empresas da aba atual no banco
-        try {
-          const { error: deleteError } = await (supabase
-            .from('planilha_geral_empresas') as any)
-            .delete()
-            .eq('tab', tabName);
-          if (deleteError) {
-            console.error('Erro ao apagar empresas da aba:', deleteError);
-          } else {
-            console.log('Empresas da aba', tabName, 'apagadas com sucesso');
-          }
-        } catch (err) {
-          console.error('Erro ao apagar empresas:', err);
-        }
-
-        // 2. Criar novas empresas a partir da planilha
+        // Criar novas empresas a partir da planilha
         jsonData.forEach((row) => {
           const empresaNome = String(row[empresaCol] || '').trim();
           if (!empresaNome) return;
@@ -1332,6 +1317,13 @@ const PlanilhaGeral: React.FC = () => {
           const regimeValue = regimeCol ? String(row[regimeCol] || '').trim() : '';
           const cnpj = cnpjCol ? String(row[cnpjCol] || '').trim() : '';
           const cod = codCol ? String(row[codCol] || '').trim() : '';
+
+          // Verificar se já existe empresa com mesmo nome ou CNPJ para evitar duplicatas
+          const alreadyExists = existingList.some(
+            (emp) => emp.empresa.toLowerCase() === empresaNome.toLowerCase() || 
+            (cnpj && emp.cnpj && emp.cnpj === cnpj)
+          );
+          if (alreadyExists) return;
 
           const newEmpresa: EmpresaPlanilha = {
             id: `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -1355,16 +1347,17 @@ const PlanilhaGeral: React.FC = () => {
             mensalidades: '',
             regimeAnoAnterior: '',
           };
-          newList.push(newEmpresa);
+          importedList.push(newEmpresa);
         });
 
-        console.log('Empresas para importar:', newList.length);
+        console.log('Novas empresas para importar:', importedList.length);
 
-        // 3. Atualizar estado local imediatamente
-        setter(newList);
+        // Mesclar: manter existentes + adicionar novas
+        const mergedList = [...existingList, ...importedList];
+        setter(mergedList);
 
-        // 4. Salvar no banco
-        for (const emp of newList) {
+        // Salvar apenas as novas no banco
+        for (const emp of importedList) {
           try {
             await saveEmpresaToDb(emp, tabName);
           } catch (err) {
@@ -1372,7 +1365,9 @@ const PlanilhaGeral: React.FC = () => {
           }
         }
 
-        toast.success(`${newList.length} empresa(s) importada(s) na aba ${tabName}`);
+        const skipped = jsonData.length - importedList.length;
+        const msg = `${importedList.length} empresa(s) importada(s) na aba ${tabName}` + (skipped > 0 ? ` (${skipped} duplicada(s) ignorada(s))` : '');
+        toast.success(msg);
       } catch (error) {
         console.error('Erro ao importar planilha:', error);
         toast.error('Erro ao importar planilha. Verifique o formato do arquivo.');
