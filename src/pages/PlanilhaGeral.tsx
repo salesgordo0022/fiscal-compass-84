@@ -79,6 +79,7 @@ const regimeTributarioOptions = [
   { value: '', label: '-' },
   { value: 'Lucro presumido', label: 'Lucro Presumido' },
   { value: 'Lucro real', label: 'Lucro Real' },
+  { value: 'Simples nacional', label: 'Simples Nacional' },
 ];
 
 const situacaoOptions = [
@@ -972,6 +973,7 @@ const PlanilhaGeral: React.FC = () => {
   const [empresasLucroRealList, setEmpresasLucroRealList] = useState<EmpresaPlanilha[]>(empresasLucroReal);
   const [empresasLucroPresumidoList, setEmpresasLucroPresumidoList] = useState<EmpresaPlanilha[]>(empresasLucroPresumido);
   const [empresasSemMovimentoList, setEmpresasSemMovimentoList] = useState<EmpresaPlanilha[]>(empresasSemMovimento);
+  const [empresasSimplesNacionalList, setEmpresasSimplesNacionalList] = useState<EmpresaPlanilha[]>([]);
 
   // Carregar dados do banco de dados na inicialização
   useEffect(() => {
@@ -997,6 +999,7 @@ const PlanilhaGeral: React.FC = () => {
           const lucroReal: EmpresaPlanilha[] = [];
           const lucroPresumido: EmpresaPlanilha[] = [];
           const semMovimento: EmpresaPlanilha[] = [];
+          const simplesNacional: EmpresaPlanilha[] = [];
 
           dbEmpresas.forEach((emp: any) => {
             const empresa: EmpresaPlanilha = {
@@ -1024,12 +1027,14 @@ const PlanilhaGeral: React.FC = () => {
 
             if (emp.tab === 'lucro-presumido') lucroPresumido.push(empresa);
             else if (emp.tab === 'sem-movimento') semMovimento.push(empresa);
+            else if (emp.tab === 'simples-nacional') simplesNacional.push(empresa);
             else lucroReal.push(empresa);
           });
 
           setEmpresasLucroRealList(lucroReal);
           setEmpresasLucroPresumidoList(lucroPresumido);
           setEmpresasSemMovimentoList(semMovimento);
+          setEmpresasSimplesNacionalList(simplesNacional);
         } else {
           // Banco vazio - usar dados mock e salvar no banco (com prefixo nos IDs para evitar colisão)
           const prefixedLucroReal = empresasLucroReal.map(e => ({ ...e, id: `lr-${e.id}`, tab: 'lucro-real' }));
