@@ -1307,12 +1307,13 @@ const PlanilhaGeral: React.FC = () => {
         const getListAndSetter = () => {
           if (activeTab === 'lucro-real') return { list: empresasLucroRealList, setter: setEmpresasLucroRealList, regime: 'Lucro real' };
           if (activeTab === 'lucro-presumido') return { list: empresasLucroPresumidoList, setter: setEmpresasLucroPresumidoList, regime: 'Lucro presumido' };
+          if (activeTab === 'simples-nacional') return { list: empresasSimplesNacionalList, setter: setEmpresasSimplesNacionalList, regime: 'Simples nacional' };
           return { list: empresasSemMovimentoList, setter: setEmpresasSemMovimentoList, regime: '' };
         };
 
         const { list: existingList, setter, regime } = getListAndSetter();
         const importedList: EmpresaPlanilha[] = [];
-        const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : 'sem-movimento';
+        const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : activeTab === 'simples-nacional' ? 'simples-nacional' : 'sem-movimento';
 
         // Criar novas empresas a partir da planilha
         jsonData.forEach((row) => {
@@ -1413,6 +1414,8 @@ const PlanilhaGeral: React.FC = () => {
       setEmpresasLucroRealList(prev => [...prev, newEmpresa]);
     } else if (activeTab === 'lucro-presumido') {
       setEmpresasLucroPresumidoList(prev => [...prev, newEmpresa]);
+    } else if (activeTab === 'simples-nacional') {
+      setEmpresasSimplesNacionalList(prev => [...prev, newEmpresa]);
     } else {
       setEmpresasSemMovimentoList(prev => [...prev, newEmpresa]);
     }
@@ -1426,6 +1429,8 @@ const PlanilhaGeral: React.FC = () => {
       setEmpresasLucroRealList(prev => prev.filter(e => e.id !== empresaId));
     } else if (activeTab === 'lucro-presumido') {
       setEmpresasLucroPresumidoList(prev => prev.filter(e => e.id !== empresaId));
+    } else if (activeTab === 'simples-nacional') {
+      setEmpresasSimplesNacionalList(prev => prev.filter(e => e.id !== empresaId));
     } else {
       setEmpresasSemMovimentoList(prev => prev.filter(e => e.id !== empresaId));
     }
@@ -1444,6 +1449,7 @@ const PlanilhaGeral: React.FC = () => {
   const getActiveEmpresas = () => {
     if (activeTab === 'lucro-real') return empresasLucroRealList;
     if (activeTab === 'lucro-presumido') return empresasLucroPresumidoList;
+    if (activeTab === 'simples-nacional') return empresasSimplesNacionalList;
     return empresasSemMovimentoList;
   };
 
