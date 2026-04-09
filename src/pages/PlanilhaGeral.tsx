@@ -1560,7 +1560,7 @@ const PlanilhaGeral: React.FC = () => {
     const isComMovimento = situacaoLower.includes('com movimento');
 
     // Determinar aba de destino baseado na situação e regime
-    let targetTab: 'lucro-real' | 'lucro-presumido' | 'sem-movimento' | null = null;
+    let targetTab: 'lucro-real' | 'lucro-presumido' | 'simples-nacional' | 'sem-movimento' | null = null;
     
     if (isSaiu || isSemMovimento) {
       targetTab = 'sem-movimento';
@@ -1570,6 +1570,8 @@ const PlanilhaGeral: React.FC = () => {
         targetTab = 'lucro-real';
       } else if (regimeLower.includes('presumido')) {
         targetTab = 'lucro-presumido';
+      } else if (regimeLower.includes('simples')) {
+        targetTab = 'simples-nacional';
       }
     }
 
@@ -1587,6 +1589,8 @@ const PlanilhaGeral: React.FC = () => {
         setEmpresasLucroRealList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
       } else if (activeTab === 'lucro-presumido') {
         setEmpresasLucroPresumidoList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
+      } else if (activeTab === 'simples-nacional') {
+        setEmpresasSimplesNacionalList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
       } else {
         setEmpresasSemMovimentoList(prev => prev.filter(e => e.id !== selectedEmpresa.id));
       }
@@ -1596,6 +1600,8 @@ const PlanilhaGeral: React.FC = () => {
         setEmpresasLucroRealList(prev => [updatedEmpresa, ...prev]);
       } else if (targetTab === 'lucro-presumido') {
         setEmpresasLucroPresumidoList(prev => [updatedEmpresa, ...prev]);
+      } else if (targetTab === 'simples-nacional') {
+        setEmpresasSimplesNacionalList(prev => [updatedEmpresa, ...prev]);
       } else {
         setEmpresasSemMovimentoList(prev => [updatedEmpresa, ...prev]);
       }
@@ -1603,6 +1609,7 @@ const PlanilhaGeral: React.FC = () => {
       const tabNames: Record<string, string> = {
         'lucro-real': 'Lucro Real',
         'lucro-presumido': 'Lucro Presumido',
+        'simples-nacional': 'Simples Nacional',
         'sem-movimento': 'Sem Movimento'
       };
       
