@@ -1817,6 +1817,13 @@ const PlanilhaGeral: React.FC = () => {
                 EMPRESAS LUCRO PRESUMIDO
               </TabsTrigger>
               <TabsTrigger
+                value="simples-nacional"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2 text-sm"
+              >
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                EMPRESAS SIMPLES NACIONAL
+              </TabsTrigger>
+              <TabsTrigger
                 value="sem-movimento"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2 text-sm"
               >
@@ -1854,6 +1861,7 @@ const PlanilhaGeral: React.FC = () => {
                   { name: 'regime', label: 'Regime Tributário', type: 'select', options: [
                     { value: 'Lucro real', label: 'Lucro Real' },
                     { value: 'Lucro presumido', label: 'Lucro Presumido' },
+                    { value: 'Simples nacional', label: 'Simples Nacional' },
                   ] },
                 ]}
                 onAdd={handleAddEmpresa}
@@ -1867,6 +1875,9 @@ const PlanilhaGeral: React.FC = () => {
             </TabsContent>
             <TabsContent value="lucro-presumido" className="m-0">
               <EmpresasTable empresas={empresasLucroPresumidoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
+            </TabsContent>
+            <TabsContent value="simples-nacional" className="m-0">
+              <EmpresasTable empresas={empresasSimplesNacionalList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
             </TabsContent>
             <TabsContent value="sem-movimento" className="m-0">
               <EmpresasTable empresas={empresasSemMovimentoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
