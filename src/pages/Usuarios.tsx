@@ -63,6 +63,12 @@ const Usuarios: React.FC = () => {
     role: 'user' as AppRole,
   });
 
+  const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', role: 'user' as AppRole });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<UserWithRole | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Only admin can access this page
   if (user?.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
