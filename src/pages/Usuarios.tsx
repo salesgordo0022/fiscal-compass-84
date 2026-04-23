@@ -415,6 +415,7 @@ const Usuarios: React.FC = () => {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead>Nome</TableHead>
+                  <TableHead>E-mail</TableHead>
                   <TableHead>Perfil</TableHead>
                   <TableHead>Criado em</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -423,7 +424,7 @@ const Usuarios: React.FC = () => {
               <TableBody>
                 {users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                       Nenhum usuário cadastrado
                     </TableCell>
                   </TableRow>
@@ -431,6 +432,7 @@ const Usuarios: React.FC = () => {
                   users.map((u) => (
                     <TableRow key={u.id}>
                       <TableCell className="font-medium">{u.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{u.email || '—'}</TableCell>
                       <TableCell>
                         <span className={`status-badge ${
                           u.role === 'admin' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
@@ -448,6 +450,14 @@ const Usuarios: React.FC = () => {
                             title="Editar"
                           >
                             <Pencil size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => { setPasswordUser(u); setNewPassword(''); }}
+                            title="Alterar senha"
+                          >
+                            <KeyRound size={16} />
                           </Button>
                           <Button
                             variant="ghost"
