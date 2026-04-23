@@ -268,11 +268,11 @@ const Usuarios: React.FC = () => {
     }
     setIsDeleting(true);
     try {
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', deletingUser.id);
-      if (roleError) throw roleError;
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        body: { action: 'delete', user_id: deletingUser.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast({ title: 'Sucesso', description: 'Usuário removido do sistema' });
       setDeletingUser(null);
@@ -281,6 +281,30 @@ const Usuarios: React.FC = () => {
       toast({ title: 'Erro', description: error.message || 'Erro ao excluir usuário', variant: 'destructive' });
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!passwordUser) return;
+    if (newPassword.length < 6) {
+      toast({ title: 'Erro', description: 'A senha deve ter pelo menos 6 caracteres', variant: 'destructive' });
+      return;
+    }
+    setIsUpdatingPassword(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        body: { action: 'update_password', user_id: passwordUser.id, password: newPassword },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({ title: 'Sucesso', description: `Senha de ${passwordUser.name} atualizada` });
+      setPasswordUser(null);
+      setNewPassword('');
+    } catch (error: any) {
+      toast({ title: 'Erro', description: error.message || 'Erro ao atualizar senha', variant: 'destructive' });
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
