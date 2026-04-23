@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UserPlus, RefreshCw, Pencil, Trash2 } from 'lucide-react';
+import { UserPlus, RefreshCw, Pencil, Trash2, KeyRound } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,6 +68,9 @@ const Usuarios: React.FC = () => {
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [deletingUser, setDeletingUser] = useState<UserWithRole | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<UserWithRole | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   // Only admin can access this page
   if (user?.role !== 'admin') {
@@ -100,12 +103,30 @@ const Usuarios: React.FC = () => {
         console.error('Error fetching roles:', rolesError);
       }
 
+      // Fetch emails via secure admin edge function (admin-only)
+      let emailMap: Record<string, string> = {};
+      try {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke(
+          'admin-users',
+          { body: { action: 'list' } }
+        );
+        if (emailError) {
+          console.error('Error fetching emails:', emailError);
+        } else if (emailData?.users) {
+          emailMap = Object.fromEntries(
+            (emailData.users as Array<{ id: string; email: string }>).map((u) => [u.id, u.email])
+          );
+        }
+      } catch (err) {
+        console.error('Error invoking admin-users:', err);
+      }
+
       // Combine data
       const usersWithRoles: UserWithRole[] = profiles?.map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.id);
         return {
           id: profile.id,
-          email: '', // Email not exposed in profiles for security
+          email: emailMap[profile.id] || '',
           name: profile.name,
           role: (userRole?.role as AppRole) || 'user',
           created_at: profile.created_at,
@@ -247,11 +268,11 @@ const Usuarios: React.FC = () => {
     }
     setIsDeleting(true);
     try {
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', deletingUser.id);
-      if (roleError) throw roleError;
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        body: { action: 'delete', user_id: deletingUser.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast({ title: 'Sucesso', description: 'Usuário removido do sistema' });
       setDeletingUser(null);
@@ -260,6 +281,30 @@ const Usuarios: React.FC = () => {
       toast({ title: 'Erro', description: error.message || 'Erro ao excluir usuário', variant: 'destructive' });
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!passwordUser) return;
+    if (newPassword.length < 6) {
+      toast({ title: 'Erro', description: 'A senha deve ter pelo menos 6 caracteres', variant: 'destructive' });
+      return;
+    }
+    setIsUpdatingPassword(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        body: { action: 'update_password', user_id: passwordUser.id, password: newPassword },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({ title: 'Sucesso', description: `Senha de ${passwordUser.name} atualizada` });
+      setPasswordUser(null);
+      setNewPassword('');
+    } catch (error: any) {
+      toast({ title: 'Erro', description: error.message || 'Erro ao atualizar senha', variant: 'destructive' });
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -370,6 +415,7 @@ const Usuarios: React.FC = () => {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead>Nome</TableHead>
+                  <TableHead>E-mail</TableHead>
                   <TableHead>Perfil</TableHead>
                   <TableHead>Criado em</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -378,7 +424,7 @@ const Usuarios: React.FC = () => {
               <TableBody>
                 {users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                       Nenhum usuário cadastrado
                     </TableCell>
                   </TableRow>
@@ -386,6 +432,7 @@ const Usuarios: React.FC = () => {
                   users.map((u) => (
                     <TableRow key={u.id}>
                       <TableCell className="font-medium">{u.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{u.email || '—'}</TableCell>
                       <TableCell>
                         <span className={`status-badge ${
                           u.role === 'admin' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
@@ -403,6 +450,14 @@ const Usuarios: React.FC = () => {
                             title="Editar"
                           >
                             <Pencil size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => { setPasswordUser(u); setNewPassword(''); }}
+                            title="Alterar senha"
+                          >
+                            <KeyRound size={16} />
                           </Button>
                           <Button
                             variant="ghost"
@@ -487,6 +542,42 @@ const Usuarios: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Change Password Dialog */}
+      <Dialog
+        open={!!passwordUser}
+        onOpenChange={(open) => { if (!open) { setPasswordUser(null); setNewPassword(''); } }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar Senha</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Defina uma nova senha para <strong>{passwordUser?.name}</strong>
+              {passwordUser?.email ? ` (${passwordUser.email})` : ''}.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">Nova senha</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                disabled={isUpdatingPassword}
+              />
+            </div>
+            <Button
+              onClick={handleUpdatePassword}
+              className="w-full mt-2"
+              disabled={isUpdatingPassword}
+            >
+              {isUpdatingPassword ? 'Salvando...' : 'Atualizar senha'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
