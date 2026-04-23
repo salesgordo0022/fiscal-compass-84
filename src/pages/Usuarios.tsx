@@ -201,6 +201,68 @@ const Usuarios: React.FC = () => {
     }
   };
 
+  const openEditDialog = (u: UserWithRole) => {
+    setEditingUser(u);
+    setEditForm({ name: u.name, role: u.role });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return;
+    if (!editForm.name.trim()) {
+      toast({ title: 'Erro', description: 'O nome é obrigatório', variant: 'destructive' });
+      return;
+    }
+    setIsSavingEdit(true);
+    try {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ name: editForm.name.trim() })
+        .eq('id', editingUser.id);
+      if (profileError) throw profileError;
+
+      if (editForm.role !== editingUser.role) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .update({ role: editForm.role })
+          .eq('user_id', editingUser.id);
+        if (roleError) throw roleError;
+      }
+
+      toast({ title: 'Sucesso', description: 'Usuário atualizado com sucesso' });
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast({ title: 'Erro', description: error.message || 'Erro ao atualizar usuário', variant: 'destructive' });
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingUser) return;
+    if (deletingUser.id === user?.id) {
+      toast({ title: 'Erro', description: 'Você não pode excluir a si mesmo', variant: 'destructive' });
+      setDeletingUser(null);
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', deletingUser.id);
+      if (roleError) throw roleError;
+
+      toast({ title: 'Sucesso', description: 'Usuário removido do sistema' });
+      setDeletingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast({ title: 'Erro', description: error.message || 'Erro ao excluir usuário', variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <TopBar title="Gestão de Usuários" subtitle="Administração" />
