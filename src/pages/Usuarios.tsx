@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UserPlus, RefreshCw, Pencil, Trash2 } from 'lucide-react';
+import { UserPlus, RefreshCw, Pencil, Trash2, KeyRound } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
