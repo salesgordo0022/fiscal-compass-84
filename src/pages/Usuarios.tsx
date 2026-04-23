@@ -28,7 +28,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UserPlus, RefreshCw } from 'lucide-react';
+import { UserPlus, RefreshCw, Pencil, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -52,6 +62,12 @@ const Usuarios: React.FC = () => {
     password: '',
     role: 'user' as AppRole,
   });
+
+  const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', role: 'user' as AppRole });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<UserWithRole | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Only admin can access this page
   if (user?.role !== 'admin') {
@@ -185,6 +201,68 @@ const Usuarios: React.FC = () => {
     }
   };
 
+  const openEditDialog = (u: UserWithRole) => {
+    setEditingUser(u);
+    setEditForm({ name: u.name, role: u.role });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return;
+    if (!editForm.name.trim()) {
+      toast({ title: 'Erro', description: 'O nome é obrigatório', variant: 'destructive' });
+      return;
+    }
+    setIsSavingEdit(true);
+    try {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ name: editForm.name.trim() })
+        .eq('id', editingUser.id);
+      if (profileError) throw profileError;
+
+      if (editForm.role !== editingUser.role) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .update({ role: editForm.role })
+          .eq('user_id', editingUser.id);
+        if (roleError) throw roleError;
+      }
+
+      toast({ title: 'Sucesso', description: 'Usuário atualizado com sucesso' });
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast({ title: 'Erro', description: error.message || 'Erro ao atualizar usuário', variant: 'destructive' });
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingUser) return;
+    if (deletingUser.id === user?.id) {
+      toast({ title: 'Erro', description: 'Você não pode excluir a si mesmo', variant: 'destructive' });
+      setDeletingUser(null);
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', deletingUser.id);
+      if (roleError) throw roleError;
+
+      toast({ title: 'Sucesso', description: 'Usuário removido do sistema' });
+      setDeletingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast({ title: 'Erro', description: error.message || 'Erro ao excluir usuário', variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <TopBar title="Gestão de Usuários" subtitle="Administração" />
@@ -294,12 +372,13 @@ const Usuarios: React.FC = () => {
                   <TableHead>Nome</TableHead>
                   <TableHead>Perfil</TableHead>
                   <TableHead>Criado em</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                       Nenhum usuário cadastrado
                     </TableCell>
                   </TableRow>
@@ -315,6 +394,27 @@ const Usuarios: React.FC = () => {
                         </span>
                       </TableCell>
                       <TableCell>{new Date(u.created_at).toLocaleDateString('pt-BR')}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(u)}
+                            title="Editar"
+                          >
+                            <Pencil size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeletingUser(u)}
+                            disabled={u.id === user?.id}
+                            title={u.id === user?.id ? 'Não é possível excluir a si mesmo' : 'Excluir'}
+                          >
+                            <Trash2 size={16} className="text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -323,6 +423,70 @@ const Usuarios: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Edit User Dialog */}
+      <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nome Completo</Label>
+              <Input
+                id="edit-name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                disabled={isSavingEdit}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-role">Perfil</Label>
+              <Select
+                value={editForm.role}
+                onValueChange={(value: AppRole) => setEditForm({ ...editForm, role: value })}
+                disabled={isSavingEdit || editingUser?.id === user?.id}
+              >
+                <SelectTrigger id="edit-role">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">Usuário</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+              {editingUser?.id === user?.id && (
+                <p className="text-xs text-muted-foreground">Você não pode alterar seu próprio perfil.</p>
+              )}
+            </div>
+            <Button onClick={handleSaveEdit} className="w-full mt-4" disabled={isSavingEdit}>
+              {isSavingEdit ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir usuário</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir <strong>{deletingUser?.name}</strong>? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
