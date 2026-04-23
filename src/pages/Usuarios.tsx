@@ -68,6 +68,9 @@ const Usuarios: React.FC = () => {
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [deletingUser, setDeletingUser] = useState<UserWithRole | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<UserWithRole | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   // Only admin can access this page
   if (user?.role !== 'admin') {
@@ -100,12 +103,30 @@ const Usuarios: React.FC = () => {
         console.error('Error fetching roles:', rolesError);
       }
 
+      // Fetch emails via secure admin edge function (admin-only)
+      let emailMap: Record<string, string> = {};
+      try {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke(
+          'admin-users',
+          { body: { action: 'list' } }
+        );
+        if (emailError) {
+          console.error('Error fetching emails:', emailError);
+        } else if (emailData?.users) {
+          emailMap = Object.fromEntries(
+            (emailData.users as Array<{ id: string; email: string }>).map((u) => [u.id, u.email])
+          );
+        }
+      } catch (err) {
+        console.error('Error invoking admin-users:', err);
+      }
+
       // Combine data
       const usersWithRoles: UserWithRole[] = profiles?.map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.id);
         return {
           id: profile.id,
-          email: '', // Email not exposed in profiles for security
+          email: emailMap[profile.id] || '',
           name: profile.name,
           role: (userRole?.role as AppRole) || 'user',
           created_at: profile.created_at,
