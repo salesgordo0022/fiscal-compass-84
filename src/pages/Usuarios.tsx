@@ -542,6 +542,42 @@ const Usuarios: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Change Password Dialog */}
+      <Dialog
+        open={!!passwordUser}
+        onOpenChange={(open) => { if (!open) { setPasswordUser(null); setNewPassword(''); } }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar Senha</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Defina uma nova senha para <strong>{passwordUser?.name}</strong>
+              {passwordUser?.email ? ` (${passwordUser.email})` : ''}.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">Nova senha</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                disabled={isUpdatingPassword}
+              />
+            </div>
+            <Button
+              onClick={handleUpdatePassword}
+              className="w-full mt-2"
+              disabled={isUpdatingPassword}
+            >
+              {isUpdatingPassword ? 'Salvando...' : 'Atualizar senha'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
