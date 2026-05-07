@@ -992,6 +992,7 @@ const PlanilhaGeral: React.FC = () => {
             const parsed = JSON.parse(savedLists);
             if (parsed.lucroReal) setEmpresasLucroRealList(parsed.lucroReal);
             if (parsed.lucroPresumido) setEmpresasLucroPresumidoList(parsed.lucroPresumido);
+            if (parsed.simplesNacional) setEmpresasSimplesNacionalList(parsed.simplesNacional);
             if (parsed.semMovimento) setEmpresasSemMovimentoList(parsed.semMovimento);
           }
         } else if (dbEmpresas && dbEmpresas.length > 0) {
@@ -1191,9 +1192,10 @@ const PlanilhaGeral: React.FC = () => {
     localStorage.setItem('planilhaGeral_empresasLists', JSON.stringify({
       lucroReal: empresasLucroRealList,
       lucroPresumido: empresasLucroPresumidoList,
+      simplesNacional: empresasSimplesNacionalList,
       semMovimento: empresasSemMovimentoList,
     }));
-  }, [empresasLucroRealList, empresasLucroPresumidoList, empresasSemMovimentoList, dbInitialized]);
+  }, [empresasLucroRealList, empresasLucroPresumidoList, empresasSimplesNacionalList, empresasSemMovimentoList, dbInitialized]);
 
   useEffect(() => {
     if (!dbInitialized) return;
@@ -1267,15 +1269,12 @@ const PlanilhaGeral: React.FC = () => {
         console.log('Colunas detectadas na planilha:', columnHeaders);
 
         // Detectar colunas automaticamente (case-insensitive)
-        // Usa correspondência exata primeiro, depois parcial
         const findCol = (row: Record<string, any>, names: string[]) => {
           const keys = Object.keys(row);
-          // Primeiro: correspondência exata (ignorando case e espaços)
           for (const name of names) {
             const found = keys.find(k => k.toLowerCase().trim() === name.toLowerCase());
             if (found) return found;
           }
-          // Segundo: correspondência parcial (contém)
           for (const name of names) {
             const found = keys.find(k => k.toLowerCase().trim().includes(name.toLowerCase()));
             if (found) return found;
@@ -1283,14 +1282,7 @@ const PlanilhaGeral: React.FC = () => {
           return null;
         };
         
-        // Modelos de coluna suportados:
-        // Modelo 1: Empresa, CNPJ, Cod
-        // Modelo 2: # (cod), CNPJCPF/CEI (cnpj), Número (cod alt), Apelido (empresa), Tributação (regime)
-        // Modelo 2: # (cod), CNPJCPF/CEI (tipo - ignorar), Número (o número real do CNPJ/CPF), Apelido (empresa), Tributação (regime)
-        // Modelo 3: Razão Social, CNPJ/CPF, Código
-        // Modelo 4: Nome, CPF/CNPJ, Regime
         const empresaCol = findCol(firstRow, ['empresa', 'apelido', 'razão social', 'razao social', 'nome fantasia', 'denominação', 'denominacao', 'nome']);
-        // "Número" contém o número real do CNPJ/CPF, então deve ser mapeado como cnpj
         const cnpjCol = findCol(firstRow, ['numero', 'número', 'cnpj', 'cpf/cnpj', 'cnpj/cpf', 'cpf_cnpj', 'cnpj_cpf', 'cpf']);
         const codCol = findCol(firstRow, ['cod', 'código', 'codigo', '#', 'id', 'seq']);
         const regimeCol = findCol(firstRow, ['tributação', 'tributacao', 'regime', 'enquadramento', 'tipo']);
@@ -1372,7 +1364,13 @@ const PlanilhaGeral: React.FC = () => {
         }
 
         const skipped = jsonData.length - importedList.length;
-        const msg = `${importedList.length} empresa(s) importada(s) na aba ${tabName}` + (skipped > 0 ? ` (${skipped} duplicada(s) ignorada(s))` : '');
+        const tabNames: Record<string, string> = {
+          'lucro-real': 'Lucro Real',
+          'lucro-presumido': 'Lucro Presumido',
+          'simples-nacional': 'Simples Nacional',
+          'sem-movimento': 'Saiu / Sem Movimento'
+        };
+        const msg = `${importedList.length} empresa(s) importada(s) na aba ${tabNames[tabName]}` + (skipped > 0 ? ` (${skipped} duplicada(s) ignorada(s))` : '');
         toast.success(msg);
       } catch (error) {
         console.error('Erro ao importar planilha:', error);
@@ -1382,7 +1380,6 @@ const PlanilhaGeral: React.FC = () => {
       }
     };
     reader.readAsBinaryString(file);
-    // Reset input para permitir reimportar o mesmo arquivo
     e.target.value = '';
   };
 
