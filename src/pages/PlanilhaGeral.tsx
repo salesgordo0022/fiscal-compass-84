@@ -1191,9 +1191,10 @@ const PlanilhaGeral: React.FC = () => {
     localStorage.setItem('planilhaGeral_empresasLists', JSON.stringify({
       lucroReal: empresasLucroRealList,
       lucroPresumido: empresasLucroPresumidoList,
+      simplesNacional: empresasSimplesNacionalList,
       semMovimento: empresasSemMovimentoList,
     }));
-  }, [empresasLucroRealList, empresasLucroPresumidoList, empresasSemMovimentoList, dbInitialized]);
+  }, [empresasLucroRealList, empresasLucroPresumidoList, empresasSimplesNacionalList, empresasSemMovimentoList, dbInitialized]);
 
   useEffect(() => {
     if (!dbInitialized) return;
