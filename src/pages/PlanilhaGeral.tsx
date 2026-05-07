@@ -1303,9 +1303,22 @@ const PlanilhaGeral: React.FC = () => {
           return { list: empresasSemMovimentoList, setter: setEmpresasSemMovimentoList, regime: '' };
         };
 
-        const { list: existingList, setter, regime } = getListAndSetter();
-        const importedList: EmpresaPlanilha[] = [];
+        const { setter, regime } = getListAndSetter();
         const tabName = activeTab === 'lucro-real' ? 'lucro-real' : activeTab === 'lucro-presumido' ? 'lucro-presumido' : activeTab === 'simples-nacional' ? 'simples-nacional' : 'sem-movimento';
+
+        // Remover empresas anteriores da aba (conforme solicitado pelo usuário)
+        // Antes de substituir, removemos do banco
+        if (activeTab === 'lucro-real') {
+          await (supabase.from('planilha_geral_empresas') as any).delete().eq('tab', 'lucro-real');
+        } else if (activeTab === 'lucro-presumido') {
+          await (supabase.from('planilha_geral_empresas') as any).delete().eq('tab', 'lucro-presumido');
+        } else if (activeTab === 'simples-nacional') {
+          await (supabase.from('planilha_geral_empresas') as any).delete().eq('tab', 'simples-nacional');
+        } else {
+          await (supabase.from('planilha_geral_empresas') as any).delete().eq('tab', 'sem-movimento');
+        }
+
+        const importedList: EmpresaPlanilha[] = [];
 
         // Criar novas empresas a partir da planilha
         jsonData.forEach((row) => {
@@ -1315,13 +1328,6 @@ const PlanilhaGeral: React.FC = () => {
           const regimeValue = regimeCol ? String(row[regimeCol] || '').trim() : '';
           const cnpj = cnpjCol ? String(row[cnpjCol] || '').trim() : '';
           const cod = codCol ? String(row[codCol] || '').trim() : '';
-
-          // Verificar se já existe empresa com mesmo nome ou CNPJ para evitar duplicatas
-          const alreadyExists = existingList.some(
-            (emp) => emp.empresa.toLowerCase() === empresaNome.toLowerCase() || 
-            (cnpj && emp.cnpj && emp.cnpj === cnpj)
-          );
-          if (alreadyExists) return;
 
           const newEmpresa: EmpresaPlanilha = {
             id: `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -1350,9 +1356,8 @@ const PlanilhaGeral: React.FC = () => {
 
         console.log('Novas empresas para importar:', importedList.length);
 
-        // Mesclar: manter existentes + adicionar novas
-        const mergedList = [...existingList, ...importedList];
-        setter(mergedList);
+        // Substituir a lista existente pela nova lista importada
+        setter(importedList);
 
         // Salvar apenas as novas no banco
         for (const emp of importedList) {
