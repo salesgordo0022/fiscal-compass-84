@@ -992,6 +992,7 @@ const PlanilhaGeral: React.FC = () => {
             const parsed = JSON.parse(savedLists);
             if (parsed.lucroReal) setEmpresasLucroRealList(parsed.lucroReal);
             if (parsed.lucroPresumido) setEmpresasLucroPresumidoList(parsed.lucroPresumido);
+            if (parsed.simplesNacional) setEmpresasSimplesNacionalList(parsed.simplesNacional);
             if (parsed.semMovimento) setEmpresasSemMovimentoList(parsed.semMovimento);
           }
         } else if (dbEmpresas && dbEmpresas.length > 0) {
