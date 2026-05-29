@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, ChevronDown, Check, MessageSquare, Eye, Pencil, UserMinus, Upload } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Plus, Grid3X3, SquarePen, Trash2, ListChecks, ChevronDown, Check, MessageSquare, Eye, Pencil, UserMinus, Upload, ArrowRight } from 'lucide-react';
 import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filter';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
@@ -512,7 +512,7 @@ const SituacaoBadge: React.FC<{ value: string }> = ({ value }) => {
   );
 };
 
-const TrimestreBadge: React.FC<{ value: string }> = ({ value }) => {
+export const TrimestreBadge: React.FC<{ value: string }> = ({ value }) => {
   if (!value) return <span className="text-sm text-muted-foreground">-</span>;
   
   const isLucro = value === 'Lucro';
@@ -541,7 +541,7 @@ const TrimestreBadge: React.FC<{ value: string }> = ({ value }) => {
   );
 };
 
-const RegimeAnteriorBadge: React.FC<{ value: string }> = ({ value }) => {
+export const RegimeAnteriorBadge: React.FC<{ value: string }> = ({ value }) => {
   if (!value) return <span className="text-sm text-muted-foreground">-</span>;
   
   const { bgColor } = getRegimeAnteriorColor(value);
@@ -554,7 +554,7 @@ const RegimeAnteriorBadge: React.FC<{ value: string }> = ({ value }) => {
 };
 
 // Format date to d/MM/yyyy pattern
-const formatDate = (dateStr: string): string => {
+export const formatDate = (dateStr: string): string => {
   if (!dateStr) return '';
   
   // Parse common date formats
@@ -632,24 +632,24 @@ const ProgressBarWithPopover: React.FC<{ value: number; empresa: EmpresaPlanilha
   );
 };
 
-interface Anotacao {
+export interface Anotacao {
   id: string;
   texto: string;
   data: string;
 }
 
-interface ChecklistItem {
+export interface ChecklistItem {
   id: string;
   texto: string;
   concluido: boolean;
 }
 
-interface LalurTrimestreState {
+export interface LalurTrimestreState {
   ok: boolean;
   impostoEnviado: boolean;
 }
 
-interface LalurState {
+export interface LalurState {
   trimestre1: LalurTrimestreState;
   trimestre2: LalurTrimestreState;
   trimestre3: LalurTrimestreState;
@@ -657,7 +657,7 @@ interface LalurState {
 }
 
 // Dados salvos de cada empresa
-interface EmpresaSavedData {
+export interface EmpresaSavedData {
   codigo: string;
   cnpj: string;
   checklistItems: ChecklistItem[];
@@ -671,7 +671,7 @@ interface EmpresaSavedData {
   regimeAnoAnterior: string;
 }
 
-interface EmpresaEditState {
+export interface EmpresaEditState {
   codigo: string;
   cnpj: string;
   editandoCodigo: boolean;
@@ -691,7 +691,7 @@ interface EmpresaEditState {
   regimeAnoAnterior: string;
 }
 
-const emptyLalurState: LalurState = {
+export const emptyLalurState: LalurState = {
   trimestre1: { ok: false, impostoEnviado: false },
   trimestre2: { ok: false, impostoEnviado: false },
   trimestre3: { ok: false, impostoEnviado: false },
@@ -699,7 +699,7 @@ const emptyLalurState: LalurState = {
 };
 
 // Helper para formatar o valor de LALUR
-const formatLalurValue = (lalur: LalurState): string => {
+export const formatLalurValue = (lalur: LalurState): string => {
   const parts: string[] = [];
   
   [1, 2, 3, 4].forEach((num) => {
@@ -717,7 +717,7 @@ const formatLalurValue = (lalur: LalurState): string => {
 };
 
 // Helper para parsear o valor de LALUR de string para objeto
-const parseLalurValue = (value: string): LalurState => {
+export const parseLalurValue = (value: string): LalurState => {
   const result: LalurState = { ...emptyLalurState };
   if (!value) return result;
   
@@ -738,14 +738,14 @@ const parseLalurValue = (value: string): LalurState => {
   return result;
 };
 
-interface EmpresasTableProps {
+export interface EmpresasTableProps {
   empresas: EmpresaPlanilha[];
   onEmpresaClick: (empresa: EmpresaPlanilha) => void;
   savedDataMap: Record<string, EmpresaSavedData>;
   onRemove?: (empresaId: string) => void;
 }
 
-const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick, savedDataMap, onRemove }) => {
+export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick, savedDataMap, onRemove }) => {
   const { filters, setFilter, matchesFilter } = useColumnFilters(['cod', 'cnpj', 'empresa', 'dataFechamento'] as const);
 
   const filteredEmpresas = empresas.filter((empresa) => {
@@ -1819,13 +1819,6 @@ const PlanilhaGeral: React.FC = () => {
                 EMPRESAS LUCRO PRESUMIDO
               </TabsTrigger>
               <TabsTrigger
-                value="simples-nacional"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2 text-sm"
-              >
-                <Grid3X3 className="h-4 w-4 mr-2" />
-                EMPRESAS SIMPLES NACIONAL
-              </TabsTrigger>
-              <TabsTrigger
                 value="sem-movimento"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2 text-sm"
               >
@@ -1877,9 +1870,6 @@ const PlanilhaGeral: React.FC = () => {
             </TabsContent>
             <TabsContent value="lucro-presumido" className="m-0">
               <EmpresasTable empresas={empresasLucroPresumidoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
-            </TabsContent>
-            <TabsContent value="simples-nacional" className="m-0">
-              <EmpresasTable empresas={empresasSimplesNacionalList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
             </TabsContent>
             <TabsContent value="sem-movimento" className="m-0">
               <EmpresasTable empresas={empresasSemMovimentoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />

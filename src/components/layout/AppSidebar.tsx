@@ -24,6 +24,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { title: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { title: 'Planilha Geral', path: '/planilha-geral', icon: FileSpreadsheet },
+  { title: 'Simples Nacional', path: '/simples-nacional', icon: Building2 },
   { title: 'Carnê Leão', path: '/carne-leao', icon: Calculator },
   { title: 'Controle de Holding', path: '/controle-holding', icon: Building2 },
   { title: 'ECD e ECF', path: '/ecd-ecf', icon: FileText },
