@@ -541,7 +541,7 @@ export const TrimestreBadge: React.FC<{ value: string }> = ({ value }) => {
   );
 };
 
-const RegimeAnteriorBadge: React.FC<{ value: string }> = ({ value }) => {
+export const RegimeAnteriorBadge: React.FC<{ value: string }> = ({ value }) => {
   if (!value) return <span className="text-sm text-muted-foreground">-</span>;
   
   const { bgColor } = getRegimeAnteriorColor(value);
