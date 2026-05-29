@@ -17,6 +17,7 @@ import EcdEcf from "./pages/EcdEcf";
 import LucroReal from "./pages/LucroReal";
 import LucroPresumido from "./pages/LucroPresumido";
 import TerceiroSetor from "./pages/TerceiroSetor";
+import SimplesNacional from "./pages/SimplesNacional";
 import Usuarios from "./pages/Usuarios";
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/lucro-real" element={<LucroReal />} />
               <Route path="/lucro-presumido" element={<LucroPresumido />} />
               <Route path="/terceiro-setor" element={<TerceiroSetor />} />
+              <Route path="/simples-nacional" element={<SimplesNacional />} />
               <Route path="/usuarios" element={<Usuarios />} />
             </Route>
             
