@@ -632,24 +632,24 @@ const ProgressBarWithPopover: React.FC<{ value: number; empresa: EmpresaPlanilha
   );
 };
 
-interface Anotacao {
+export interface Anotacao {
   id: string;
   texto: string;
   data: string;
 }
 
-interface ChecklistItem {
+export interface ChecklistItem {
   id: string;
   texto: string;
   concluido: boolean;
 }
 
-interface LalurTrimestreState {
+export interface LalurTrimestreState {
   ok: boolean;
   impostoEnviado: boolean;
 }
 
-interface LalurState {
+export interface LalurState {
   trimestre1: LalurTrimestreState;
   trimestre2: LalurTrimestreState;
   trimestre3: LalurTrimestreState;
@@ -657,7 +657,7 @@ interface LalurState {
 }
 
 // Dados salvos de cada empresa
-interface EmpresaSavedData {
+export interface EmpresaSavedData {
   codigo: string;
   cnpj: string;
   checklistItems: ChecklistItem[];
@@ -671,7 +671,7 @@ interface EmpresaSavedData {
   regimeAnoAnterior: string;
 }
 
-interface EmpresaEditState {
+export interface EmpresaEditState {
   codigo: string;
   cnpj: string;
   editandoCodigo: boolean;
@@ -691,7 +691,7 @@ interface EmpresaEditState {
   regimeAnoAnterior: string;
 }
 
-const emptyLalurState: LalurState = {
+export const emptyLalurState: LalurState = {
   trimestre1: { ok: false, impostoEnviado: false },
   trimestre2: { ok: false, impostoEnviado: false },
   trimestre3: { ok: false, impostoEnviado: false },
@@ -699,7 +699,7 @@ const emptyLalurState: LalurState = {
 };
 
 // Helper para formatar o valor de LALUR
-const formatLalurValue = (lalur: LalurState): string => {
+export const formatLalurValue = (lalur: LalurState): string => {
   const parts: string[] = [];
   
   [1, 2, 3, 4].forEach((num) => {
@@ -717,7 +717,7 @@ const formatLalurValue = (lalur: LalurState): string => {
 };
 
 // Helper para parsear o valor de LALUR de string para objeto
-const parseLalurValue = (value: string): LalurState => {
+export const parseLalurValue = (value: string): LalurState => {
   const result: LalurState = { ...emptyLalurState };
   if (!value) return result;
   
