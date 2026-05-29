@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import TopBar from '@/components/layout/TopBar';
 import PageDescription from '@/components/layout/PageDescription';
-import { Plus, Upload, SquarePen, Trash2, ListChecks, Check, MessageSquare, Eye, Search } from 'lucide-react';
+import { Plus, Upload, SquarePen, Trash2, ListChecks, Check, MessageSquare, Eye, Search, Grid3X3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import { toast } from 'sonner';
@@ -23,8 +23,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+import { type EmpresaPlanilha } from '@/mocks/planilhaGeral';
 import { 
-  type EmpresaPlanilha, 
   type EmpresaSavedData, 
   type EmpresaEditState,
   type Anotacao,
