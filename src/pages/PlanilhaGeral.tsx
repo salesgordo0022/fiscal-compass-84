@@ -2045,6 +2045,12 @@ const PlanilhaGeral: React.FC = () => {
                 />
               </div>
             </div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              Última modificação:{' '}
+              <span className="font-medium text-foreground">
+                {formatUltimaModificacao(selectedEmpresa ? savedDataMap[selectedEmpresa.id]?.ultimaModificacao : undefined)}
+              </span>
+            </div>
           </SheetHeader>
 
           <ScrollArea className="h-[calc(100vh-120px)]">
