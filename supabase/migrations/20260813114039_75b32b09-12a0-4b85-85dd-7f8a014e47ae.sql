@@ -1,0 +1,1 @@
+ALTER TABLE public.planilha_geral_saved_data ADD COLUMN IF NOT EXISTS modificado_por text DEFAULT '';
