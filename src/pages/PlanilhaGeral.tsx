@@ -1563,6 +1563,7 @@ const PlanilhaGeral: React.FC = () => {
       situacao: editState.situacao,
       mensalidades: editState.mensalidades,
       regimeAnoAnterior: editState.regimeAnoAnterior,
+      ultimaModificacao: new Date().toISOString(),
     };
 
     setSavedDataMap(prev => ({
