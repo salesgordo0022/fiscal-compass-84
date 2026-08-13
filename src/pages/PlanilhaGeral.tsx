@@ -4,6 +4,7 @@ import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filt
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
 import { Button } from '@/components/ui/button';
