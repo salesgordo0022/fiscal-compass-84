@@ -103,6 +103,7 @@ export type Database = {
           empresa_id: string
           lalur: Json | null
           mensalidades: string | null
+          modificado_por: string | null
           regime: string | null
           regime_ano_anterior: string | null
           situacao: string | null
@@ -119,6 +120,7 @@ export type Database = {
           empresa_id: string
           lalur?: Json | null
           mensalidades?: string | null
+          modificado_por?: string | null
           regime?: string | null
           regime_ano_anterior?: string | null
           situacao?: string | null
@@ -135,6 +137,7 @@ export type Database = {
           empresa_id?: string
           lalur?: Json | null
           mensalidades?: string | null
+          modificado_por?: string | null
           regime?: string | null
           regime_ano_anterior?: string | null
           situacao?: string | null

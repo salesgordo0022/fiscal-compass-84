@@ -4,6 +4,7 @@ import { ColumnFilterInput, useColumnFilters } from '@/components/ui/column-filt
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 import AddEntityDialog from '@/components/dialogs/AddEntityDialog';
 import DeleteConfirmDialog from '@/components/dialogs/DeleteConfirmDialog';
 import { Button } from '@/components/ui/button';
@@ -670,6 +671,7 @@ export interface EmpresaSavedData {
   mensalidades: string;
   regimeAnoAnterior: string;
   ultimaModificacao?: string;
+  modificadoPor?: string;
 }
 
 // Formata data/hora da última modificação
@@ -977,6 +979,7 @@ export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpres
 };
 
 const PlanilhaGeral: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('lucro-real');
   const [selectedEmpresa, setSelectedEmpresa] = useState<EmpresaPlanilha | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -1118,6 +1121,7 @@ const PlanilhaGeral: React.FC = () => {
               mensalidades: sd.mensalidades || '',
               regimeAnoAnterior: sd.regime_ano_anterior || '',
               ultimaModificacao: sd.updated_at || undefined,
+              modificadoPor: sd.modificado_por || undefined,
             };
           });
           setSavedDataMap(map);
@@ -1201,6 +1205,8 @@ const PlanilhaGeral: React.FC = () => {
               trimestre: '',
               lalur: emptyLalurState,
               situacao: '',
+              modificado_por: 'Sistema (zeramento mensal)',
+              updated_at: new Date().toISOString(),
             })
             .in('empresa_id', empresaIds);
         }
@@ -1236,6 +1242,7 @@ const PlanilhaGeral: React.FC = () => {
                 lalur: emptyLalurState,
                 situacao: '',
                 ultimaModificacao: new Date().toISOString(),
+                modificadoPor: 'Sistema (zeramento mensal)',
               };
             }
           });
@@ -1293,6 +1300,8 @@ const PlanilhaGeral: React.FC = () => {
       situacao: data.situacao,
       mensalidades: data.mensalidades,
       regime_ano_anterior: data.regimeAnoAnterior,
+      modificado_por: data.modificadoPor || '',
+      updated_at: new Date().toISOString(),
     });
   };
 
@@ -1656,6 +1665,7 @@ const PlanilhaGeral: React.FC = () => {
       mensalidades: editState.mensalidades,
       regimeAnoAnterior: editState.regimeAnoAnterior,
       ultimaModificacao: new Date().toISOString(),
+      modificadoPor: user?.name || user?.email || 'Usuário',
     };
 
     setSavedDataMap(prev => ({
@@ -2050,6 +2060,14 @@ const PlanilhaGeral: React.FC = () => {
               <span className="font-medium text-foreground">
                 {formatUltimaModificacao(selectedEmpresa ? savedDataMap[selectedEmpresa.id]?.ultimaModificacao : undefined)}
               </span>
+              {selectedEmpresa && savedDataMap[selectedEmpresa.id]?.modificadoPor && (
+                <>
+                  {' · Por: '}
+                  <span className="font-medium text-foreground">
+                    {savedDataMap[selectedEmpresa.id]?.modificadoPor}
+                  </span>
+                </>
+              )}
             </div>
           </SheetHeader>
 
