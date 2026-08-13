@@ -671,6 +671,7 @@ export interface EmpresaSavedData {
   mensalidades: string;
   regimeAnoAnterior: string;
   ultimaModificacao?: string;
+  modificadoPor?: string;
 }
 
 // Formata data/hora da última modificação
