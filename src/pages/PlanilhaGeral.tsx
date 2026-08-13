@@ -1117,6 +1117,7 @@ const PlanilhaGeral: React.FC = () => {
               situacao: sd.situacao || '',
               mensalidades: sd.mensalidades || '',
               regimeAnoAnterior: sd.regime_ano_anterior || '',
+              ultimaModificacao: sd.updated_at || undefined,
             };
           });
           setSavedDataMap(map);
