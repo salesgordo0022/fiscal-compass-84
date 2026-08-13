@@ -669,7 +669,24 @@ export interface EmpresaSavedData {
   situacao: string;
   mensalidades: string;
   regimeAnoAnterior: string;
+  ultimaModificacao?: string;
 }
+
+// Formata data/hora da última modificação
+export const formatUltimaModificacao = (iso?: string): string => {
+  if (!iso) return 'Nunca modificada';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return 'Nunca modificada';
+  return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
+
+// Chave do último fechamento mensal (último dia do mês).
+// Se hoje for o último dia do mês, a referência é o mês atual; caso contrário, o mês anterior.
+export const getUltimoFechamentoKey = (now: Date = new Date()): string => {
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const ref = now.getDate() === lastDay ? now : new Date(now.getFullYear(), now.getMonth(), 0);
+  return `${ref.getFullYear()}-${String(ref.getMonth() + 1).padStart(2, '0')}`;
+};
 
 export interface EmpresaEditState {
   codigo: string;
