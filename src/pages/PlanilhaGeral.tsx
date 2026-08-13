@@ -977,6 +977,7 @@ export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpres
 };
 
 const PlanilhaGeral: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('lucro-real');
   const [selectedEmpresa, setSelectedEmpresa] = useState<EmpresaPlanilha | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
