@@ -1149,6 +1149,7 @@ const PlanilhaGeral: React.FC = () => {
         }
 
         setDbInitialized(true);
+
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
       } finally {
