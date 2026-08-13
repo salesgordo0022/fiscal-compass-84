@@ -1205,6 +1205,8 @@ const PlanilhaGeral: React.FC = () => {
               trimestre: '',
               lalur: emptyLalurState,
               situacao: '',
+              modificado_por: 'Sistema (zeramento mensal)',
+              updated_at: new Date().toISOString(),
             })
             .in('empresa_id', empresaIds);
         }
