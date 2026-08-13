@@ -669,7 +669,24 @@ export interface EmpresaSavedData {
   situacao: string;
   mensalidades: string;
   regimeAnoAnterior: string;
+  ultimaModificacao?: string;
 }
+
+// Formata data/hora da última modificação
+export const formatUltimaModificacao = (iso?: string): string => {
+  if (!iso) return 'Nunca modificada';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return 'Nunca modificada';
+  return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
+
+// Chave do último fechamento mensal (último dia do mês).
+// Se hoje for o último dia do mês, a referência é o mês atual; caso contrário, o mês anterior.
+export const getUltimoFechamentoKey = (now: Date = new Date()): string => {
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const ref = now.getDate() === lastDay ? now : new Date(now.getFullYear(), now.getMonth(), 0);
+  return `${ref.getFullYear()}-${String(ref.getMonth() + 1).padStart(2, '0')}`;
+};
 
 export interface EmpresaEditState {
   codigo: string;
@@ -1100,6 +1117,7 @@ const PlanilhaGeral: React.FC = () => {
               situacao: sd.situacao || '',
               mensalidades: sd.mensalidades || '',
               regimeAnoAnterior: sd.regime_ano_anterior || '',
+              ultimaModificacao: sd.updated_at || undefined,
             };
           });
           setSavedDataMap(map);
@@ -1131,6 +1149,7 @@ const PlanilhaGeral: React.FC = () => {
         }
 
         setDbInitialized(true);
+
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
       } finally {
@@ -1140,6 +1159,97 @@ const PlanilhaGeral: React.FC = () => {
 
     loadFromDatabase();
   }, []);
+
+  // Zeramento automático das fichas de Lucro Real e Lucro Presumido no último dia de cada mês
+  useEffect(() => {
+    if (!dbInitialized) return;
+
+    const RESET_STORAGE_KEY = 'planilhaGeral_ultimoResetMensal';
+    const dueKey = getUltimoFechamentoKey();
+    if (localStorage.getItem(RESET_STORAGE_KEY) === dueKey) return;
+
+    const executarReset = async () => {
+      try {
+        const { data: rows } = await (supabase
+          .from('planilha_geral_empresas') as any)
+          .select('id')
+          .in('tab', ['lucro-real', 'lucro-presumido']);
+
+        const empresaIds: string[] = (rows || []).map((r: any) => r.id);
+
+        if (empresaIds.length > 0) {
+          await (supabase.from('planilha_geral_empresas') as any)
+            .update({
+              solicitacao: false,
+              despesas: false,
+              mister_cont_dig: false,
+              conferir_extratos: false,
+              conciliacao_impostos: false,
+              darf: false,
+              anotacao: '',
+              trimestre: '',
+              lalur: '',
+              data_fechamento: '',
+              situacao: '',
+            })
+            .in('id', empresaIds);
+
+          await (supabase.from('planilha_geral_saved_data') as any)
+            .update({
+              checklist_items: [],
+              anotacoes: [],
+              trimestre: '',
+              lalur: emptyLalurState,
+              situacao: '',
+            })
+            .in('empresa_id', empresaIds);
+        }
+
+        localStorage.setItem(RESET_STORAGE_KEY, dueKey);
+
+        const limparEmpresa = (e: EmpresaPlanilha): EmpresaPlanilha => ({
+          ...e,
+          solicitacao: false,
+          despesas: false,
+          misterContDig: false,
+          conferirExtratos: false,
+          conciliacaoImpostos: false,
+          darf: false,
+          anotacao: '',
+          trimestre: '',
+          lalur: '',
+          dataFechamento: '',
+          situacao: '',
+        });
+
+        setEmpresasLucroRealList(prev => prev.map(limparEmpresa));
+        setEmpresasLucroPresumidoList(prev => prev.map(limparEmpresa));
+        setSavedDataMap(prev => {
+          const next = { ...prev };
+          empresaIds.forEach(id => {
+            if (next[id]) {
+              next[id] = {
+                ...next[id],
+                checklistItems: [],
+                anotacoes: [],
+                trimestre: '',
+                lalur: emptyLalurState,
+                situacao: '',
+                ultimaModificacao: new Date().toISOString(),
+              };
+            }
+          });
+          return next;
+        });
+
+        toast.info('Fichas de Lucro Real e Lucro Presumido zeradas para o novo mês.');
+      } catch (error) {
+        console.error('Erro no zeramento mensal:', error);
+      }
+    };
+
+    executarReset();
+  }, [dbInitialized]);
 
   // Função auxiliar para salvar empresa no banco
   const saveEmpresaToDb = async (empresa: EmpresaPlanilha, tab: string) => {
@@ -1545,6 +1655,7 @@ const PlanilhaGeral: React.FC = () => {
       situacao: editState.situacao,
       mensalidades: editState.mensalidades,
       regimeAnoAnterior: editState.regimeAnoAnterior,
+      ultimaModificacao: new Date().toISOString(),
     };
 
     setSavedDataMap(prev => ({
@@ -1933,6 +2044,12 @@ const PlanilhaGeral: React.FC = () => {
                   placeholder="00.000.000/0000-00"
                 />
               </div>
+            </div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              Última modificação:{' '}
+              <span className="font-medium text-foreground">
+                {formatUltimaModificacao(selectedEmpresa ? savedDataMap[selectedEmpresa.id]?.ultimaModificacao : undefined)}
+              </span>
             </div>
           </SheetHeader>
 
