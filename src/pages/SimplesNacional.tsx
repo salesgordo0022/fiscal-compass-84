@@ -95,6 +95,7 @@ const SimplesNacional: React.FC = () => {
             situacao: emp.situacao || '',
             mensalidades: emp.mensalidades || '',
             regimeAnoAnterior: emp.regime_ano_anterior || '',
+            responsavel: emp.responsavel || '',
           }));
           setEmpresasSimplesNacionalList(list);
         }
