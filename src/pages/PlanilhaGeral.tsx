@@ -835,6 +835,7 @@ export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpres
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[80px] text-center">Detalhes</TableHead>
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[80px] text-center">Anotações</TableHead>
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[120px] text-center">Data do fechamento</TableHead>
+            <TableHead className="text-xs font-medium text-muted-foreground min-w-[140px] text-center">Responsável</TableHead>
             {onRemove && <TableHead className="text-xs font-medium text-muted-foreground min-w-[60px] text-center">Ações</TableHead>}
           </TableRow>
           <TableRow className="border-b border-border bg-muted/20">
@@ -845,6 +846,7 @@ export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpres
             <TableHead className="py-1 px-2" />
             <TableHead className="py-1 px-2" />
             <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataFechamento} onChange={(v) => setFilter('dataFechamento', v)} placeholder="Buscar data..." /></TableHead>
+            <TableHead className="py-1 px-2" />
             {onRemove && <TableHead className="py-1 px-2" />}
           </TableRow>
         </TableHeader>
@@ -963,6 +965,22 @@ export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpres
                   )}
                 </TableCell>
                 <TableCell className="py-2 text-sm text-center">{formatDate(empresa.dataFechamento)}</TableCell>
+                <TableCell className="py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                  <Select
+                    value={empresa.responsavel || '__none__'}
+                    onValueChange={(v) => onResponsavelChange?.(empresa, v === '__none__' ? '' : v)}
+                  >
+                    <SelectTrigger className="h-8 w-[130px] text-sm mx-auto">
+                      <SelectValue placeholder="Selecionar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">—</SelectItem>
+                      {RESPONSAVEIS.map((r) => (
+                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
                 {onRemove && (
                   <TableCell className="py-2 text-center" onClick={(e) => e.stopPropagation()}>
                     <DeleteConfirmDialog
