@@ -1568,6 +1568,22 @@ const PlanilhaGeral: React.FC = () => {
     saveEmpresaToDb(newEmpresa, activeTab);
   };
 
+  const handleResponsavelChange = async (empresa: EmpresaPlanilha, responsavel: string) => {
+    const updateList = (prev: EmpresaPlanilha[]) =>
+      prev.map(e => e.id === empresa.id ? { ...e, responsavel } : e);
+    setEmpresasLucroRealList(updateList);
+    setEmpresasLucroPresumidoList(updateList);
+    setEmpresasSemMovimentoList(updateList);
+    setEmpresasSimplesNacionalList(updateList);
+    const { error } = await (supabase.from('planilha_geral_empresas') as any)
+      .update({ responsavel })
+      .eq('id', empresa.id);
+    if (error) {
+      console.error('Erro ao salvar responsável:', error);
+      toast.error('Erro ao salvar responsável.');
+    }
+  };
+
   const handleRemoveEmpresa = async (empresaId: string) => {
     if (activeTab === 'lucro-real') {
       setEmpresasLucroRealList(prev => prev.filter(e => e.id !== empresaId));
