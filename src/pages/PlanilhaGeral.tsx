@@ -757,14 +757,17 @@ export const parseLalurValue = (value: string): LalurState => {
   return result;
 };
 
+export const RESPONSAVEIS = ['Kellry', 'Aline', 'Gabi'] as const;
+
 export interface EmpresasTableProps {
   empresas: EmpresaPlanilha[];
   onEmpresaClick: (empresa: EmpresaPlanilha) => void;
   savedDataMap: Record<string, EmpresaSavedData>;
   onRemove?: (empresaId: string) => void;
+  onResponsavelChange?: (empresa: EmpresaPlanilha, responsavel: string) => void;
 }
 
-export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick, savedDataMap, onRemove }) => {
+export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick, savedDataMap, onRemove, onResponsavelChange }) => {
   const { filters, setFilter, matchesFilter } = useColumnFilters(['cod', 'cnpj', 'empresa', 'dataFechamento'] as const);
 
   const filteredEmpresas = empresas.filter((empresa) => {
