@@ -757,14 +757,17 @@ export const parseLalurValue = (value: string): LalurState => {
   return result;
 };
 
+export const RESPONSAVEIS = ['Kellry', 'Aline', 'Gabi'] as const;
+
 export interface EmpresasTableProps {
   empresas: EmpresaPlanilha[];
   onEmpresaClick: (empresa: EmpresaPlanilha) => void;
   savedDataMap: Record<string, EmpresaSavedData>;
   onRemove?: (empresaId: string) => void;
+  onResponsavelChange?: (empresa: EmpresaPlanilha, responsavel: string) => void;
 }
 
-export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick, savedDataMap, onRemove }) => {
+export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpresaClick, savedDataMap, onRemove, onResponsavelChange }) => {
   const { filters, setFilter, matchesFilter } = useColumnFilters(['cod', 'cnpj', 'empresa', 'dataFechamento'] as const);
 
   const filteredEmpresas = empresas.filter((empresa) => {
@@ -832,6 +835,7 @@ export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpres
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[80px] text-center">Detalhes</TableHead>
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[80px] text-center">Anotações</TableHead>
             <TableHead className="text-xs font-medium text-muted-foreground min-w-[120px] text-center">Data do fechamento</TableHead>
+            <TableHead className="text-xs font-medium text-muted-foreground min-w-[140px] text-center">Responsável</TableHead>
             {onRemove && <TableHead className="text-xs font-medium text-muted-foreground min-w-[60px] text-center">Ações</TableHead>}
           </TableRow>
           <TableRow className="border-b border-border bg-muted/20">
@@ -842,6 +846,7 @@ export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpres
             <TableHead className="py-1 px-2" />
             <TableHead className="py-1 px-2" />
             <TableHead className="py-1 px-2"><ColumnFilterInput value={filters.dataFechamento} onChange={(v) => setFilter('dataFechamento', v)} placeholder="Buscar data..." /></TableHead>
+            <TableHead className="py-1 px-2" />
             {onRemove && <TableHead className="py-1 px-2" />}
           </TableRow>
         </TableHeader>
@@ -960,6 +965,22 @@ export const EmpresasTable: React.FC<EmpresasTableProps> = ({ empresas, onEmpres
                   )}
                 </TableCell>
                 <TableCell className="py-2 text-sm text-center">{formatDate(empresa.dataFechamento)}</TableCell>
+                <TableCell className="py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                  <Select
+                    value={empresa.responsavel || '__none__'}
+                    onValueChange={(v) => onResponsavelChange?.(empresa, v === '__none__' ? '' : v)}
+                  >
+                    <SelectTrigger className="h-8 w-[130px] text-sm mx-auto">
+                      <SelectValue placeholder="Selecionar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">—</SelectItem>
+                      {RESPONSAVEIS.map((r) => (
+                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
                 {onRemove && (
                   <TableCell className="py-2 text-center" onClick={(e) => e.stopPropagation()}>
                     <DeleteConfirmDialog
@@ -1044,6 +1065,7 @@ const PlanilhaGeral: React.FC = () => {
               situacao: emp.situacao || '',
               mensalidades: emp.mensalidades || '',
               regimeAnoAnterior: emp.regime_ano_anterior || '',
+              responsavel: emp.responsavel || '',
             };
 
             if (emp.tab === 'lucro-presumido') lucroPresumido.push(empresa);
@@ -1281,6 +1303,7 @@ const PlanilhaGeral: React.FC = () => {
       situacao: empresa.situacao,
       mensalidades: empresa.mensalidades,
       regime_ano_anterior: empresa.regimeAnoAnterior,
+      responsavel: empresa.responsavel || '',
       tab,
     });
   };
@@ -1543,6 +1566,22 @@ const PlanilhaGeral: React.FC = () => {
 
     // Salvar no banco
     saveEmpresaToDb(newEmpresa, activeTab);
+  };
+
+  const handleResponsavelChange = async (empresa: EmpresaPlanilha, responsavel: string) => {
+    const updateList = (prev: EmpresaPlanilha[]) =>
+      prev.map(e => e.id === empresa.id ? { ...e, responsavel } : e);
+    setEmpresasLucroRealList(updateList);
+    setEmpresasLucroPresumidoList(updateList);
+    setEmpresasSemMovimentoList(updateList);
+    setEmpresasSimplesNacionalList(updateList);
+    const { error } = await (supabase.from('planilha_geral_empresas') as any)
+      .update({ responsavel })
+      .eq('id', empresa.id);
+    if (error) {
+      console.error('Erro ao salvar responsável:', error);
+      toast.error('Erro ao salvar responsável.');
+    }
   };
 
   const handleRemoveEmpresa = async (empresaId: string) => {
@@ -1987,13 +2026,13 @@ const PlanilhaGeral: React.FC = () => {
 
           <div className="border border-border rounded-sm overflow-hidden">
             <TabsContent value="lucro-real" className="m-0">
-              <EmpresasTable empresas={empresasLucroRealList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
+              <EmpresasTable empresas={empresasLucroRealList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} onResponsavelChange={handleResponsavelChange} />
             </TabsContent>
             <TabsContent value="lucro-presumido" className="m-0">
-              <EmpresasTable empresas={empresasLucroPresumidoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
+              <EmpresasTable empresas={empresasLucroPresumidoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} onResponsavelChange={handleResponsavelChange} />
             </TabsContent>
             <TabsContent value="sem-movimento" className="m-0">
-              <EmpresasTable empresas={empresasSemMovimentoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
+              <EmpresasTable empresas={empresasSemMovimentoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} onResponsavelChange={handleResponsavelChange} />
             </TabsContent>
           </div>
         </Tabs>

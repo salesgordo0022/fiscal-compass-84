@@ -38,6 +38,7 @@ export interface EmpresaPlanilha {
   situacao: string;
   mensalidades: string;
   regimeAnoAnterior: string;
+  responsavel?: string;
 }
 
 export const empresasLucroReal: EmpresaPlanilha[] = [

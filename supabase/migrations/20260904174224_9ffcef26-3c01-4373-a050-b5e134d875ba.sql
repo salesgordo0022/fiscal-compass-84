@@ -1,0 +1,1 @@
+ALTER TABLE public.planilha_geral_empresas ADD COLUMN responsavel text default ''::text;

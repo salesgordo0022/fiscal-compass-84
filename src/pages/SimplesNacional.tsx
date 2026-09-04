@@ -95,6 +95,7 @@ const SimplesNacional: React.FC = () => {
             situacao: emp.situacao || '',
             mensalidades: emp.mensalidades || '',
             regimeAnoAnterior: emp.regime_ano_anterior || '',
+            responsavel: emp.responsavel || '',
           }));
           setEmpresasSimplesNacionalList(list);
         }
@@ -131,6 +132,20 @@ const SimplesNacional: React.FC = () => {
     };
     loadData();
   }, []);
+
+  const handleResponsavelChange = async (empresa: EmpresaPlanilha, responsavel: string) => {
+    setEmpresasSimplesNacionalList(prev =>
+      prev.map(e => e.id === empresa.id ? { ...e, responsavel } : e)
+    );
+    const { error } = await supabase
+      .from('planilha_geral_empresas' as any)
+      .update({ responsavel })
+      .eq('id', empresa.id);
+    if (error) {
+      console.error('Erro ao salvar responsável:', error);
+      toast.error('Erro ao salvar responsável.');
+    }
+  };
 
   const handleEmpresaClick = (empresa: EmpresaPlanilha) => {
     setSelectedEmpresa(empresa);
@@ -385,7 +400,8 @@ const SimplesNacional: React.FC = () => {
             <EmpresasTable 
               empresas={empresasSimplesNacionalList} 
               onEmpresaClick={handleEmpresaClick} 
-              savedDataMap={savedDataMap} 
+              savedDataMap={savedDataMap}
+              onResponsavelChange={handleResponsavelChange}
             />
           )}
         </div>

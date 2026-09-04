@@ -33,6 +33,7 @@ export type Database = {
           mister_cont_dig: boolean | null
           regime: string | null
           regime_ano_anterior: string | null
+          responsavel: string | null
           situacao: string | null
           solicitacao: boolean | null
           tab: string
@@ -58,6 +59,7 @@ export type Database = {
           mister_cont_dig?: boolean | null
           regime?: string | null
           regime_ano_anterior?: string | null
+          responsavel?: string | null
           situacao?: string | null
           solicitacao?: boolean | null
           tab?: string
@@ -83,6 +85,7 @@ export type Database = {
           mister_cont_dig?: boolean | null
           regime?: string | null
           regime_ano_anterior?: string | null
+          responsavel?: string | null
           situacao?: string | null
           solicitacao?: boolean | null
           tab?: string
