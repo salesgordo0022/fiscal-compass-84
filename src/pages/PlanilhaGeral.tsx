@@ -1065,6 +1065,7 @@ const PlanilhaGeral: React.FC = () => {
               situacao: emp.situacao || '',
               mensalidades: emp.mensalidades || '',
               regimeAnoAnterior: emp.regime_ano_anterior || '',
+              responsavel: emp.responsavel || '',
             };
 
             if (emp.tab === 'lucro-presumido') lucroPresumido.push(empresa);
@@ -1302,6 +1303,7 @@ const PlanilhaGeral: React.FC = () => {
       situacao: empresa.situacao,
       mensalidades: empresa.mensalidades,
       regime_ano_anterior: empresa.regimeAnoAnterior,
+      responsavel: empresa.responsavel || '',
       tab,
     });
   };
