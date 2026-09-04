@@ -2026,13 +2026,13 @@ const PlanilhaGeral: React.FC = () => {
 
           <div className="border border-border rounded-sm overflow-hidden">
             <TabsContent value="lucro-real" className="m-0">
-              <EmpresasTable empresas={empresasLucroRealList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
+              <EmpresasTable empresas={empresasLucroRealList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} onResponsavelChange={handleResponsavelChange} />
             </TabsContent>
             <TabsContent value="lucro-presumido" className="m-0">
-              <EmpresasTable empresas={empresasLucroPresumidoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
+              <EmpresasTable empresas={empresasLucroPresumidoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} onResponsavelChange={handleResponsavelChange} />
             </TabsContent>
             <TabsContent value="sem-movimento" className="m-0">
-              <EmpresasTable empresas={empresasSemMovimentoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} />
+              <EmpresasTable empresas={empresasSemMovimentoList} onEmpresaClick={handleEmpresaClick} savedDataMap={savedDataMap} onRemove={handleRemoveEmpresa} onResponsavelChange={handleResponsavelChange} />
             </TabsContent>
           </div>
         </Tabs>
