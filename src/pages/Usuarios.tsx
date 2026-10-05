@@ -167,41 +167,18 @@ const Usuarios: React.FC = () => {
     setIsCreating(true);
 
     try {
-      // Create user via Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: newUser.email,
-        password: newUser.password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: {
-            name: newUser.name,
-          },
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        body: {
+          action: 'create',
+          name: newUser.name,
+          email: newUser.email,
+          password: newUser.password,
+          role: newUser.role,
         },
       });
 
-      if (authError) {
-        toast({
-          title: 'Erro',
-          description: authError.message,
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      // If admin selected a different role, update it
-      if (authData.user && newUser.role !== 'user') {
-        // Wait a bit for the trigger to create the default role
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .update({ role: newUser.role })
-          .eq('user_id', authData.user.id);
-
-        if (roleError) {
-          console.error('Error updating role:', roleError);
-        }
-      }
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       setNewUser({ name: '', email: '', password: '', role: 'user' });
       setIsDialogOpen(false);
