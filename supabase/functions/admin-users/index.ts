@@ -58,6 +58,35 @@ Deno.serve(async (req) => {
       return json({ users });
     }
 
+    if (action === 'create') {
+      const email = String(body.email ?? '').trim().toLowerCase();
+      const password = String(body.password ?? '');
+      const name = String(body.name ?? '').trim();
+      const role = body.role === 'admin' ? 'admin' : 'user';
+
+      if (!email || !name || password.length < 6) {
+        return json({ error: 'nome, e-mail e senha (mín. 6 caracteres) são obrigatórios' }, 400);
+      }
+
+      const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { name },
+      });
+      if (createError) return json({ error: createError.message }, 400);
+
+      if (role === 'admin' && created.user) {
+        const { error: roleError } = await supabaseAdmin
+          .from('user_roles')
+          .update({ role })
+          .eq('user_id', created.user.id);
+        if (roleError) return json({ error: roleError.message }, 400);
+      }
+
+      return json({ success: true, user_id: created.user?.id });
+    }
+
     if (action === 'update_password') {
       const targetId = body.user_id as string;
       const newPassword = body.password as string;
